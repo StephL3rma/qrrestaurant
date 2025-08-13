@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Restaurant {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  tables    Table[]
+  menuItems MenuItem[]
+  orders    Order[]
+}
+
+model Table {
+  id           String     @id @default(cuid())
+  number       Int
+  capacity     Int?
+  qrCode       String     @unique
+  restaurantId String
+  createdAt    DateTime   @default(now())
+  
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  orders       Order[]
+  
+  @@unique([restaurantId, number])
+}
+
+model MenuItem {
+  id           String     @id @default(cuid())
+  name         String
+  description  String?
+  price        Float
+  category     String
+  available    Boolean    @default(true)
+  imageUrl     String?
+  restaurantId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  orderItems   OrderItem[]
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  customerName String?
+  customerEmail String?
+  status       OrderStatus @default(PENDING)
+  total        Float
+  tableId      String
+  restaurantId String
+  paymentId    String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  table        Table       @relation(fields: [tableId], references: [id])
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  orderItems   OrderItem[]
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  quantity   Int
+  price      Float
+  orderId    String
+  menuItemId String
+  
+  order      Order    @relation(fields: [orderId], references: [id])
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  DELIVERED
+  CANCELLED
+}
