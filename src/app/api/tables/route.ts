@@ -55,10 +55,10 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(table)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to create table:", error)
     
-    if (error.code === 'P2002') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
       return NextResponse.json({ error: "Table number already exists" }, { status: 400 })
     }
     

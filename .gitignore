@@ -47,3 +47,5 @@ prisma/dev.db-journal
 
 # Keep example env file
 !.env.example
+
+.vercel

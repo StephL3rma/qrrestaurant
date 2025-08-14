@@ -5,7 +5,10 @@
       "Bash(npx prisma:*)",
       "Bash(npm run dev:*)",
       "Bash(npm run build:*)",
-      "Bash(git remote remove:*)"
+      "Bash(git remote remove:*)",
+      "Bash(vercel:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

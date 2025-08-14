@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         restaurantId,
         tableId: table.id,
         orderItems: {
-          create: orderItems.map((item: any) => ({
+          create: orderItems.map((item: {quantity: number, price: string, menuItemId: string}) => ({
             quantity: item.quantity,
             price: parseFloat(item.price),
             menuItemId: item.menuItemId
