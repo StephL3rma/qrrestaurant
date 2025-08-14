@@ -196,8 +196,8 @@ export default function PaymentsPage() {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-blue-700">
-                      <strong>Platform Fee:</strong> We charge a 2% platform fee on each successful payment. 
-                      The remaining 98% goes directly to your bank account.
+                      <strong>Platform Fee:</strong> We charge a 1% platform fee on each successful payment. 
+                      The remaining 99% goes directly to your bank account.
                     </p>
                   </div>
                 </div>

@@ -41,8 +41,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Calculate platform fee (2% of total)
-    const platformFeeAmount = Math.round(order.total * 100 * 0.02)
+    // Calculate platform fee (1% of total)
+    const platformFeeAmount = Math.round(order.total * 100 * 0.01)
     const totalAmount = Math.round(order.total * 100)
 
     // Create payment intent with destination charge (money goes to restaurant)
