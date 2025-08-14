@@ -6,9 +6,10 @@ import QRCode from "qrcode"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { tableId: string } }
+  { params }: { params: Promise<{ tableId: string }> }
 ) {
   try {
+    const { tableId } = await params
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
@@ -17,7 +18,7 @@ export async function GET(
 
     const table = await prisma.table.findFirst({
       where: {
-        id: params.tableId,
+        id: tableId,
         restaurantId: session.user.id
       }
     })

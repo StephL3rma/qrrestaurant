@@ -3,12 +3,13 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { restaurantId: string } }
+  { params }: { params: Promise<{ restaurantId: string }> }
 ) {
   try {
+    const { restaurantId } = await params
     const restaurant = await prisma.restaurant.findUnique({
       where: {
-        id: params.restaurantId
+        id: restaurantId
       },
       select: {
         id: true,

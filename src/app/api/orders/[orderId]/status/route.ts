@@ -5,9 +5,10 @@ import { prisma } from "@/lib/prisma"
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
@@ -23,7 +24,7 @@ export async function PUT(
     // Verify the order belongs to this restaurant
     const existingOrder = await prisma.order.findFirst({
       where: {
-        id: params.orderId,
+        id: orderId,
         restaurantId: session.user.id
       }
     })
@@ -33,7 +34,7 @@ export async function PUT(
     }
 
     const updatedOrder = await prisma.order.update({
-      where: { id: params.orderId },
+      where: { id: orderId },
       data: { status }
     })
 
