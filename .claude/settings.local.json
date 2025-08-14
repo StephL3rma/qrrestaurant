@@ -8,7 +8,8 @@
       "Bash(git remote remove:*)",
       "Bash(vercel:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(timeout 30 npx prisma generate)"
     ],
     "deny": [],
     "ask": []

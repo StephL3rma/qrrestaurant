@@ -14,7 +14,14 @@ export async function POST(request: NextRequest) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        restaurant: true,
+        restaurant: {
+          select: {
+            id: true,
+            name: true,
+            stripeAccountId: true,
+            stripeOnboarded: true
+          }
+        },
         orderItems: {
           include: {
             menuItem: true
@@ -27,14 +34,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
     }
 
-    // Create payment intent
+    // Check if restaurant has Stripe Connect set up
+    if (!order.restaurant.stripeAccountId || !order.restaurant.stripeOnboarded) {
+      return NextResponse.json({ 
+        error: "Restaurant payment setup incomplete. Please contact the restaurant." 
+      }, { status: 400 })
+    }
+
+    // Calculate platform fee (2% of total)
+    const platformFeeAmount = Math.round(order.total * 100 * 0.02)
+    const totalAmount = Math.round(order.total * 100)
+
+    // Create payment intent with destination charge (money goes to restaurant)
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(order.total * 100), // Convert to cents
+      amount: totalAmount,
       currency: "usd",
+      application_fee_amount: platformFeeAmount,
+      transfer_data: {
+        destination: order.restaurant.stripeAccountId,
+      },
       metadata: {
         orderId: order.id,
         restaurantId: order.restaurantId,
-        customerName: order.customerName || "Anonymous"
+        customerName: order.customerName || "Anonymous",
+        restaurantName: order.restaurant.name
       }
     })
 
