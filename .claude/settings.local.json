@@ -9,7 +9,9 @@
       "Bash(vercel:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(timeout 30 npx prisma generate)"
+      "Bash(timeout 30 npx prisma generate)",
+      "Bash(psql:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
