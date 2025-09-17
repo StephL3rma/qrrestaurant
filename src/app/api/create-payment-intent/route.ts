@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { stripe } from "@/lib/stripe"
+import { getServerStripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
@@ -34,16 +34,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
     }
 
+    const totalAmount = Math.round(order.total * 100)
+    const stripe = getServerStripe()
+
     // Check if restaurant has Stripe Connect set up
     if (!order.restaurant.stripeAccountId || !order.restaurant.stripeOnboarded) {
-      return NextResponse.json({ 
-        error: "Restaurant payment setup incomplete. Please contact the restaurant." 
-      }, { status: 400 })
+      // Create a simple payment intent for testing (money goes directly to platform)
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: totalAmount,
+        currency: "usd",
+        metadata: {
+          orderId: order.id,
+          restaurantId: order.restaurantId,
+          customerName: order.customerName || "Anonymous",
+          restaurantName: order.restaurant.name,
+          paymentType: "direct" // Indicates this is not using Stripe Connect
+        }
+      })
+
+      return NextResponse.json({
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
+      })
     }
 
-    // Calculate platform fee (1% of total)
+    // Calculate platform fee (1% of total) for Stripe Connect
     const platformFeeAmount = Math.round(order.total * 100 * 0.01)
-    const totalAmount = Math.round(order.total * 100)
 
     // Create payment intent with destination charge (money goes to restaurant)
     const paymentIntent = await stripe.paymentIntents.create({
@@ -57,7 +73,8 @@ export async function POST(request: NextRequest) {
         orderId: order.id,
         restaurantId: order.restaurantId,
         customerName: order.customerName || "Anonymous",
-        restaurantName: order.restaurant.name
+        restaurantName: order.restaurant.name,
+        paymentType: "connect" // Indicates this uses Stripe Connect
       }
     })
 

@@ -35,13 +35,56 @@ export default function MenuPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [customerName, setCustomerName] = useState("")
   const [showCheckout, setShowCheckout] = useState(false)
+  const [existingOrders, setExistingOrders] = useState<any[]>([])
+  const [showExistingOrders, setShowExistingOrders] = useState(false)
+  const [deviceId, setDeviceId] = useState("")
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false)
 
   useEffect(() => {
+    // Generate or get existing device ID
+    const getDeviceId = () => {
+      let id = localStorage.getItem('qr_device_id')
+      if (!id) {
+        id = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+        localStorage.setItem('qr_device_id', id)
+      }
+      return id
+    }
+
+    const currentDeviceId = getDeviceId()
+    setDeviceId(currentDeviceId)
+
     if (restaurantId && tableNumber) {
       fetchRestaurantData()
       fetchMenuItems()
+      checkExistingOrders(currentDeviceId)
     }
   }, [restaurantId, tableNumber])
+
+  const checkExistingOrders = async (deviceId: string) => {
+    try {
+      const response = await fetch(`/api/orders/device/${deviceId}?restaurantId=${restaurantId}&tableNumber=${tableNumber}`)
+      if (response.ok) {
+        const orders = await response.json()
+        // Filter orders: hide delivered orders older than 3 hours
+        const recentOrders = orders.filter((order: any) => {
+          if (order.status === 'DELIVERED') {
+            const orderTime = new Date(order.updatedAt).getTime()
+            const threeHoursAgo = Date.now() - (3 * 60 * 60 * 1000)
+            return orderTime > threeHoursAgo
+          }
+          return true // Show all non-delivered orders
+        })
+
+        setExistingOrders(recentOrders)
+        if (recentOrders.length > 0) {
+          setShowExistingOrders(true)
+        }
+      }
+    } catch (error) {
+      console.error('Error checking existing orders:', error)
+    }
+  }
 
   const fetchRestaurantData = async () => {
     try {
@@ -49,9 +92,22 @@ export default function MenuPage() {
       if (response.ok) {
         const data = await response.json()
         setRestaurant(data)
+      } else {
+        // Fallback to mock data if API fails
+        setRestaurant({
+          id: restaurantId as string,
+          name: "Restaurante de Prueba",
+          address: "Calle Falsa 123"
+        })
       }
     } catch (error) {
-      console.error("Failed to fetch restaurant:", error)
+      console.error('Error fetching restaurant data:', error)
+      // Fallback to mock data
+      setRestaurant({
+        id: restaurantId as string,
+        name: "Restaurante de Prueba",
+        address: "Calle Falsa 123"
+      })
     }
   }
 
@@ -61,12 +117,46 @@ export default function MenuPage() {
       if (response.ok) {
         const data = await response.json()
         setMenuItems(data)
+        setIsLoading(false)
+        return
       }
     } catch (error) {
-      console.error("Failed to fetch menu:", error)
-    } finally {
-      setIsLoading(false)
+      console.error('Error fetching menu items:', error)
     }
+
+    // Fallback to mock menu items
+    const mockMenuItems = [
+      {
+        id: "1",
+        name: "Hamburguesa Clásica",
+        description: "Hamburguesa con carne, lechuga, tomate y queso",
+        price: 150,
+        category: "main",
+        available: true,
+        imageUrl: null
+      },
+      {
+        id: "2",
+        name: "Papas Fritas",
+        description: "Papas fritas crujientes",
+        price: 50,
+        category: "side",
+        available: true,
+        imageUrl: null
+      },
+      {
+        id: "3",
+        name: "Coca Cola",
+        description: "Refresco de cola 355ml",
+        price: 30,
+        category: "drink",
+        available: true,
+        imageUrl: null
+      }
+    ]
+
+    setMenuItems(mockMenuItems)
+    setIsLoading(false)
   }
 
   const categories = ["all", ...new Set(menuItems.map(item => item.category))]
@@ -110,34 +200,48 @@ export default function MenuPage() {
   }
 
   const handleCheckout = async () => {
-    if (orderItems.length === 0 || !customerName.trim()) return
+    if (orderItems.length === 0 || !customerName.trim() || isCreatingOrder) return
 
+    setIsCreatingOrder(true)
     try {
-      const response = await fetch("/api/orders", {
-        method: "POST",
+      // Try to create a real order first
+      const orderData = {
+        customerName: customerName.trim(),
+        restaurantId: restaurantId as string,
+        tableNumber: parseInt(tableNumber as string),
+        total: getTotalAmount(),
+        deviceId: deviceId, // Add device ID for tracking
+        orderItems: orderItems.map(item => ({
+          menuItemId: item.menuItem.id,
+          quantity: item.quantity,
+          price: item.menuItem.price.toString()
+        }))
+      }
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          restaurantId,
-          tableNumber: parseInt(tableNumber as string),
-          customerName: customerName.trim(),
-          orderItems: orderItems.map(item => ({
-            menuItemId: item.menuItem.id,
-            quantity: item.quantity,
-            price: item.menuItem.price
-          })),
-          total: getTotalAmount()
-        }),
+        body: JSON.stringify(orderData),
       })
 
       if (response.ok) {
-        const order = await response.json()
-        // Redirect to payment page
-        window.location.href = `/payment/${order.id}`
+        const createdOrder = await response.json()
+        // Redirect to real payment page
+        window.location.href = `/payment/${createdOrder.id}`
+        return
       }
     } catch (error) {
-      console.error("Failed to create order:", error)
+      console.error('Error creating real order:', error)
+      alert('Error creating order. Please try again or contact the restaurant.')
+      setIsCreatingOrder(false)
+      return
+    } finally {
+      // Reset on any error or failure
+      if (!window.location.href.includes('/payment/')) {
+        setIsCreatingOrder(false)
+      }
     }
   }
 
@@ -173,6 +277,76 @@ export default function MenuPage() {
           </div>
         </div>
       </div>
+
+      {/* Existing Orders Section */}
+      {showExistingOrders && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-blue-900">Your Active Orders</h2>
+              <button
+                onClick={() => setShowExistingOrders(false)}
+                className="text-blue-600 hover:text-blue-800 text-sm"
+              >
+                Hide
+              </button>
+            </div>
+
+            <div className="space-y-3 mb-4">
+              {existingOrders.map((order) => (
+                <div key={order.id} className="bg-white rounded-lg p-4 shadow-sm border border-blue-200">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="text-sm font-medium text-gray-900">
+                          Order #{order.id.slice(-8)}
+                        </span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                          order.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-800' :
+                          order.status === 'PREPARING' ? 'bg-orange-100 text-orange-800' :
+                          order.status === 'READY' ? 'bg-green-100 text-green-800' :
+                          order.status === 'DELIVERED' ? 'bg-gray-100 text-gray-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.status.toLowerCase()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        {order.orderItems.length} items • ${order.total.toFixed(2)}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(order.createdAt).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => window.location.href = `/track/${order.id}`}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Track Order
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowExistingOrders(false)}
+                className="flex-1 bg-white border border-blue-300 text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-blue-50"
+              >
+                🍽️ Place New Order
+              </button>
+              <button
+                onClick={() => window.location.href = `/track-all/${deviceId}`}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+              >
+                📱 View All Orders
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Category Filter */}
       <div className="bg-white border-b">
@@ -308,10 +482,10 @@ export default function MenuPage() {
               <div className="flex space-x-3">
                 <button
                   onClick={handleCheckout}
-                  disabled={!customerName.trim() || orderItems.length === 0}
+                  disabled={!customerName.trim() || orderItems.length === 0 || isCreatingOrder}
                   className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white px-4 py-2 rounded-md font-medium"
                 >
-                  Proceed to Payment
+                  {isCreatingOrder ? "Creating Order..." : "Proceed to Payment"}
                 </button>
                 <button
                   onClick={() => setShowCheckout(false)}

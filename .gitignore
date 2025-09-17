@@ -47,5 +47,19 @@ prisma/dev.db-journal
 
 # Keep example env file
 !.env.example
+!.env.production
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# SSL certificates (security)
+ssl/*.pem
+ssl/*.key
+ssl/*.crt
+
+# Backups
+*.sql
+backup/
 
 .vercel

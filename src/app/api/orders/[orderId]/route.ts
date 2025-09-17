@@ -15,6 +15,11 @@ export async function GET(
             name: true
           }
         },
+        table: {
+          select: {
+            number: true
+          }
+        },
         orderItems: {
           include: {
             menuItem: {

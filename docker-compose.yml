@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: qr-restaurant-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: qrrestaurant
+      POSTGRES_USER: qruser
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - qr-network
+
+  # Aplicación Next.js
+  app:
+    build: .
+    container_name: qr-restaurant-app
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://qruser:${DB_PASSWORD}@postgres:5432/qrrestaurant
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+    ports:
+      - "3000:3000"
+    networks:
+      - qr-network
+
+  # Nginx proxy reverso
+  nginx:
+    image: nginx:alpine
+    container_name: qr-restaurant-nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    networks:
+      - qr-network
+
+volumes:
+  postgres_data:
+
+networks:
+  qr-network:
+    driver: bridge

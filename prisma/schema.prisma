@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,20 +8,19 @@ datasource db {
 }
 
 model Restaurant {
-  id               String   @id @default(cuid())
-  name             String
-  email            String   @unique
-  password         String
-  phone            String?
-  address          String?
-  stripeAccountId  String?  @unique
-  stripeOnboarded  Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  
-  tables    Table[]
-  menuItems MenuItem[]
-  orders    Order[]
+  id              String     @id @default(cuid())
+  name            String
+  email           String     @unique
+  password        String
+  phone           String?
+  address         String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  stripeAccountId String?    @unique
+  stripeOnboarded Boolean?   @default(false)
+  menuItems       MenuItem[]
+  orders          Order[]
+  tables          Table[]
 }
 
 model Table {
@@ -37,44 +30,42 @@ model Table {
   qrCode       String     @unique
   restaurantId String
   createdAt    DateTime   @default(now())
-  
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
   orders       Order[]
-  
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
   @@unique([restaurantId, number])
 }
 
 model MenuItem {
-  id           String     @id @default(cuid())
+  id           String      @id @default(cuid())
   name         String
   description  String?
   price        Float
   category     String
-  available    Boolean    @default(true)
+  available    Boolean     @default(true)
   imageUrl     String?
   restaurantId String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
   orderItems   OrderItem[]
 }
 
 model Order {
-  id           String      @id @default(cuid())
-  customerName String?
+  id            String      @id @default(cuid())
+  customerName  String?
   customerEmail String?
-  status       OrderStatus @default(PENDING)
-  total        Float
-  tableId      String
-  restaurantId String
-  paymentId    String?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  
-  table        Table       @relation(fields: [tableId], references: [id])
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
-  orderItems   OrderItem[]
+  status        OrderStatus @default(PENDING)
+  total         Float
+  tableId       String
+  restaurantId  String
+  paymentId     String?
+  deviceId      String?     // For tracking orders by device
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id])
+  table         Table       @relation(fields: [tableId], references: [id])
+  orderItems    OrderItem[]
 }
 
 model OrderItem {
@@ -83,9 +74,8 @@ model OrderItem {
   price      Float
   orderId    String
   menuItemId String
-  
-  order      Order    @relation(fields: [orderId], references: [id])
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  order      Order    @relation(fields: [orderId], references: [id])
 }
 
 enum OrderStatus {
