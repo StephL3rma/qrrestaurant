@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { stripe } from "@/lib/stripe"
+import { getServerStripe } from "@/lib/stripe"
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check account status with Stripe
+    const stripe = getServerStripe()
     const account = await stripe.accounts.retrieve(restaurant.stripeAccountId)
     
     // For test mode, simulate onboarded status after account creation

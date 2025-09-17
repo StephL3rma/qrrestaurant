@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { stripe } from "@/lib/stripe"
+import { getServerStripe } from "@/lib/stripe"
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe Connect account
+    const stripe = getServerStripe()
     const account = await stripe.accounts.create({
       type: 'express',
       email: restaurant.email,
