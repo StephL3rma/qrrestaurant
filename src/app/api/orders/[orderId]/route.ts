@@ -12,6 +12,7 @@ export async function GET(
       include: {
         restaurant: {
           select: {
+            id: true,
             name: true
           }
         },

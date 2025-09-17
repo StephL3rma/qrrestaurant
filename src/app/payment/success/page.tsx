@@ -7,12 +7,14 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get("orderId")
   const [orderStatus, setOrderStatus] = useState("processing")
+  const [orderData, setOrderData] = useState<any>(null)
 
   useEffect(() => {
     if (orderId) {
       // Here you could update the order status to CONFIRMED
       // and send notifications to the restaurant
       updateOrderStatus()
+      fetchOrderData()
     }
   }, [orderId])
 
@@ -21,12 +23,24 @@ function PaymentSuccessContent() {
       const response = await fetch(`/api/orders/${orderId}/confirm`, {
         method: "POST"
       })
-      
+
       if (response.ok) {
         setOrderStatus("confirmed")
       }
     } catch (error) {
       console.error("Failed to confirm order:", error)
+    }
+  }
+
+  const fetchOrderData = async () => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setOrderData(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch order data:", error)
     }
   }
 
@@ -90,12 +104,28 @@ function PaymentSuccessContent() {
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 space-y-3">
             <button
-              onClick={() => window.location.href = "/"}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+              onClick={() => window.location.href = `/track/${orderId}`}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-md transition-colors"
             >
-              Close
+              📱 Track Order Status
+            </button>
+
+            {orderData && (
+              <button
+                onClick={() => window.location.href = `/menu/${orderData.restaurant.id}/${orderData.table.number}`}
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-md transition-colors"
+              >
+                🍽️ Back to Menu
+              </button>
+            )}
+
+            <button
+              onClick={() => window.print()}
+              className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+            >
+              🖨️ Print Receipt
             </button>
           </div>
         </div>
