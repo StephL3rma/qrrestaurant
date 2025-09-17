@@ -46,3 +46,7 @@ export const getServerStripe = () => {
 
   return stripe
 }
+
+// Export named stripe instance for backwards compatibility
+export const stripe = getServerStripe()
+export default stripe
