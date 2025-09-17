@@ -16,7 +16,7 @@ COPY prisma ./prisma/
 FROM base AS development
 
 # Instalar todas las dependencias (incluyendo devDependencies)
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copiar código fuente
 COPY . .
@@ -38,7 +38,7 @@ CMD ["npm", "run", "dev"]
 FROM base AS production
 
 # Instalar solo dependencias de producción
-RUN npm ci --only=production
+RUN npm ci --only=production --legacy-peer-deps
 
 # Copiar código fuente
 COPY . .
