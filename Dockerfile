@@ -37,8 +37,8 @@ CMD ["npm", "run", "dev"]
 # Production stage
 FROM base AS production
 
-# Instalar solo dependencias de producción
-RUN npm ci --only=production --legacy-peer-deps
+# Instalar TODAS las dependencias para el build (incluyendo devDependencies como Tailwind)
+RUN npm ci --legacy-peer-deps
 
 # Copiar código fuente
 COPY . .
@@ -48,6 +48,9 @@ RUN npx prisma generate
 
 # Construir la aplicación
 RUN npm run build
+
+# Limpiar devDependencies después del build para reducir tamaño
+RUN npm prune --production
 
 # Exponer puerto
 EXPOSE 3000
