@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
   try {
-    const { restaurantId, tableNumber, customerName, orderItems, total } = await request.json()
+    const { restaurantId, tableNumber, customerName, orderItems, total, deviceId } = await request.json()
 
     if (!restaurantId || !tableNumber || !customerName || !orderItems || !total) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
         status: 'PENDING',
         restaurantId,
         tableId: table.id,
+        deviceId: deviceId || null, // Store device ID for tracking
         orderItems: {
           create: orderItems.map((item: {quantity: number, price: string, menuItemId: string}) => ({
             quantity: item.quantity,

@@ -32,43 +32,70 @@ export default function PaymentPage() {
   const [clientSecret, setClientSecret] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("card")
 
   useEffect(() => {
     if (orderId) {
       fetchOrderAndCreatePayment()
     }
-  }, [orderId])
+  }, [orderId, paymentMethod])
 
   const fetchOrderAndCreatePayment = async () => {
     try {
-      // First, get the order details
+      // Try to fetch real order from database first
       const orderResponse = await fetch(`/api/orders/${orderId}`)
-      if (!orderResponse.ok) {
+
+      if (orderResponse.ok) {
+        const orderData = await orderResponse.json()
+        setOrder(orderData)
+
+        // Only create payment intent for card payments
+        if (paymentMethod === "card") {
+          // Create real payment intent
+          const paymentResponse = await fetch('/api/create-payment-intent', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderId }),
+          })
+
+          if (paymentResponse.ok) {
+            const { clientSecret: realClientSecret } = await paymentResponse.json()
+            setClientSecret(realClientSecret)
+          } else {
+            throw new Error('Failed to create payment intent')
+          }
+        }
+      } else {
+        // Clear any old mock data
+        localStorage.removeItem('mockOrder')
         throw new Error("Order not found")
       }
-      
-      const orderData = await orderResponse.json()
-      setOrder(orderData)
-
-      // Then create payment intent
-      const paymentResponse = await fetch("/api/create-payment-intent", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ orderId }),
-      })
-
-      if (!paymentResponse.ok) {
-        throw new Error("Failed to create payment")
-      }
-
-      const { clientSecret } = await paymentResponse.json()
-      setClientSecret(clientSecret)
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleCashPayment = async () => {
+    try {
+      // Mark order as pending cash payment
+      const response = await fetch(`/api/orders/${orderId}/cash-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        router.push(`/payment/${orderId}/cash-confirmation`)
+      } else {
+        setError('Failed to process cash payment request')
+      }
+    } catch (error) {
+      setError('Error processing cash payment')
     }
   }
 
@@ -144,14 +171,111 @@ export default function PaymentPage() {
           </div>
         </div>
 
+        {/* Payment Method Selection */}
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Choose Payment Method</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Card Payment Option */}
+            <div
+              className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                paymentMethod === 'card'
+                  ? 'border-indigo-500 bg-indigo-50'
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}
+              onClick={() => setPaymentMethod('card')}
+            >
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="card"
+                  checked={paymentMethod === 'card'}
+                  onChange={() => setPaymentMethod('card')}
+                  className="mr-3 text-indigo-600"
+                />
+                <div>
+                  <h3 className="font-medium text-gray-900">💳 Card / Apple Pay / Google Pay</h3>
+                  <p className="text-sm text-gray-600">Pay instantly with your card or mobile wallet</p>
+                  <p className="text-xs text-gray-500 mt-1">Processing fee: 2.9% + $0.30</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Cash Payment Option */}
+            <div
+              className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                paymentMethod === 'cash'
+                  ? 'border-green-500 bg-green-50'
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}
+              onClick={() => setPaymentMethod('cash')}
+            >
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="cash"
+                  checked={paymentMethod === 'cash'}
+                  onChange={() => setPaymentMethod('cash')}
+                  className="mr-3 text-green-600"
+                />
+                <div>
+                  <h3 className="font-medium text-gray-900">💵 Pay at Counter (Cash)</h3>
+                  <p className="text-sm text-gray-600">Pay when you pick up your order</p>
+                  <p className="text-xs text-green-600 mt-1 font-medium">No processing fees!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Payment Form */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Payment Details</h2>
-          
-          {clientSecret && (
-            <Elements options={options} stripe={stripePromise}>
-              <CheckoutForm orderId={orderId as string} />
-            </Elements>
+          {paymentMethod === 'card' ? (
+            <>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Payment Details</h2>
+              {clientSecret && (
+                <Elements options={options} stripe={stripePromise}>
+                  <CheckoutForm orderId={orderId as string} />
+                </Elements>
+              )}
+              {!clientSecret && (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Setting up payment...</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Cash Payment Instructions</h2>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <span className="text-green-600 text-xl">ℹ️</span>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-green-800">Instructions:</h3>
+                    <div className="mt-2 text-sm text-green-700">
+                      <ol className="list-decimal list-inside space-y-1">
+                        <li>Click "Confirm Cash Payment" below</li>
+                        <li>Your order will be sent to the kitchen</li>
+                        <li>Go to the counter when ready</li>
+                        <li>Pay ${order.total.toFixed(2)} in cash</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={handleCashPayment}
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              >
+                Confirm Cash Payment - ${order.total.toFixed(2)}
+              </button>
+            </>
           )}
         </div>
       </div>
