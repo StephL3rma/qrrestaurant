@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Elements } from "@stripe/react-stripe-js"
 import { getStripe } from "@/lib/stripe"
 import CheckoutForm from "@/components/CheckoutForm"
+import { Stripe } from "@stripe/stripe-js"
 
 interface Order {
   id: string
@@ -32,7 +33,8 @@ export default function PaymentPage() {
   const [clientSecret, setClientSecret] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("cash")
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("card")
+  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null)
 
   useEffect(() => {
     if (orderId) {
@@ -68,6 +70,14 @@ export default function PaymentPage() {
         // Only create payment intent for card payments
         if (paymentMethod === "card") {
           console.log('Creating payment intent...')
+
+          // Load Stripe lazily only when needed
+          if (!stripePromise) {
+            console.log('Loading Stripe...')
+            const stripe = getStripe()
+            setStripePromise(stripe)
+          }
+
           // Create real payment intent
           const paymentResponse = await fetch('/api/create-payment-intent', {
             method: 'POST',
@@ -153,7 +163,7 @@ export default function PaymentPage() {
     )
   }
 
-  const stripePromise = getStripe()
+  // Use lazy-loaded stripe promise
 
   const appearance = {
     theme: 'stripe' as const,
@@ -262,15 +272,17 @@ export default function PaymentPage() {
           {paymentMethod === 'card' ? (
             <>
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Payment Details</h2>
-              {clientSecret && (
+              {clientSecret && stripePromise && (
                 <Elements options={options} stripe={stripePromise}>
                   <CheckoutForm orderId={orderId as string} />
                 </Elements>
               )}
-              {!clientSecret && (
+              {(!clientSecret || !stripePromise) && (
                 <div className="text-center py-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Setting up payment...</p>
+                  <p className="text-gray-600">
+                    {!stripePromise ? "Loading payment system..." : "Setting up payment..."}
+                  </p>
                 </div>
               )}
             </>
