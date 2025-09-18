@@ -39,7 +39,7 @@ services:
       - /app/node_modules
       - /app/.next
     ports:
-      - "3001:3000"
+      - "3002:3000"
     networks:
       - qr-dev-network
     # Hot reload para desarrollo
