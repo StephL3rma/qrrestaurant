@@ -32,25 +32,42 @@ export default function PaymentPage() {
   const [clientSecret, setClientSecret] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("card")
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("cash")
 
   useEffect(() => {
     if (orderId) {
-      fetchOrderAndCreatePayment()
+      // Add timeout to prevent hanging
+      const timeoutId = setTimeout(() => {
+        setError("Payment setup is taking too long. Please try again.")
+        setIsLoading(false)
+      }, 30000) // 30 second timeout
+
+      fetchOrderAndCreatePayment().finally(() => {
+        clearTimeout(timeoutId)
+      })
+
+      return () => clearTimeout(timeoutId)
     }
   }, [orderId, paymentMethod])
 
   const fetchOrderAndCreatePayment = async () => {
     try {
+      console.log('=== PAYMENT PAGE DEBUG ===')
+      console.log('Fetching order:', orderId)
+      console.log('Payment method:', paymentMethod)
+
       // Try to fetch real order from database first
       const orderResponse = await fetch(`/api/orders/${orderId}`)
+      console.log('Order response status:', orderResponse.status)
 
       if (orderResponse.ok) {
         const orderData = await orderResponse.json()
+        console.log('Order data loaded:', orderData)
         setOrder(orderData)
 
         // Only create payment intent for card payments
         if (paymentMethod === "card") {
+          console.log('Creating payment intent...')
           // Create real payment intent
           const paymentResponse = await fetch('/api/create-payment-intent', {
             method: 'POST',
@@ -60,19 +77,29 @@ export default function PaymentPage() {
             body: JSON.stringify({ orderId }),
           })
 
+          console.log('Payment intent response status:', paymentResponse.status)
+
           if (paymentResponse.ok) {
             const { clientSecret: realClientSecret } = await paymentResponse.json()
+            console.log('Payment intent created successfully')
             setClientSecret(realClientSecret)
           } else {
-            throw new Error('Failed to create payment intent')
+            const errorText = await paymentResponse.text()
+            console.error('Payment intent failed:', errorText)
+            throw new Error('Failed to create payment intent: ' + errorText)
           }
+        } else {
+          console.log('Cash payment selected, skipping payment intent')
         }
       } else {
+        const errorText = await orderResponse.text()
+        console.error('Order fetch failed:', errorText)
         // Clear any old mock data
         localStorage.removeItem('mockOrder')
-        throw new Error("Order not found")
+        throw new Error("Order not found: " + errorText)
       }
     } catch (error: unknown) {
+      console.error('Payment setup error:', error)
       setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
       setIsLoading(false)
