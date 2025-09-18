@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: qrrestaurant
       POSTGRES_USER: qruser
-      POSTGRES_PASSWORD: "#1999Stri"
+      POSTGRES_PASSWORD: DevPassword123
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -29,7 +29,7 @@ services:
       - postgres
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://qruser:%231999Stri@postgres:5432/qrrestaurant
+      - DATABASE_URL=postgresql://qruser:DevPassword123@postgres:5432/qrrestaurant
       - NEXTAUTH_URL=http://31.220.31.19:3003
       - NEXTAUTH_SECRET=development-secret-32-chars-long
       - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51Rw6JgCKa9K8LC0JHB81KmeZFVfnaL3qPVJj5HuJjAnipCqNqtPGKZE660UViSGz5uR9Rlsuz79UyzzYyvpsq7sZ00K4H9C38s
@@ -39,7 +39,7 @@ services:
       - /app/node_modules
       - /app/.next
     ports:
-      - "3001:3000"
+      - "3000:3000"
     networks:
       - qr-dev-network
     # Hot reload para desarrollo
