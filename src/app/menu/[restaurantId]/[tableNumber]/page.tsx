@@ -79,15 +79,22 @@ export default function MenuPage() {
         setExistingOrders(recentOrders)
 
         if (recentOrders.length > 0) {
-          // Check if there's a recent active order (not delivered)
+          // Check if there's a recent active order (not delivered or cancelled)
           const activeOrder = recentOrders.find((order: any) =>
             order.status !== 'DELIVERED' && order.status !== 'CANCELLED'
           )
 
           if (activeOrder) {
-            // Immediate redirect to track the active order
-            window.location.href = `/track/${activeOrder.id}`
-            return
+            // IMPORTANT: Don't auto-redirect if order is PENDING (needs payment)
+            // Only redirect if order is CONFIRMED, PREPARING, or READY
+            if (activeOrder.status === 'PENDING') {
+              // Show existing orders for pending orders so user can complete payment
+              setShowExistingOrders(true)
+            } else {
+              // Redirect to track orders that are in progress
+              window.location.href = `/track/${activeOrder.id}`
+              return
+            }
           } else {
             // Only show existing orders popup if all orders are delivered
             setShowExistingOrders(true)
@@ -350,12 +357,21 @@ export default function MenuPage() {
                         {new Date(order.createdAt).toLocaleTimeString()}
                       </p>
                     </div>
-                    <button
-                      onClick={() => window.location.href = `/track/${order.id}`}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
-                    >
-                      Track Order
-                    </button>
+                    {order.status === 'PENDING' ? (
+                      <button
+                        onClick={() => window.location.href = `/payment/${order.id}`}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium"
+                      >
+                        Complete Payment
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => window.location.href = `/track/${order.id}`}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                      >
+                        Track Order
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
