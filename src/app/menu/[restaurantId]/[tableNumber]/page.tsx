@@ -37,7 +37,6 @@ export default function MenuPage() {
   const [showCheckout, setShowCheckout] = useState(false)
   const [existingOrders, setExistingOrders] = useState<any[]>([])
   const [showExistingOrders, setShowExistingOrders] = useState(false)
-  const [debugInfo, setDebugInfo] = useState<any>(null)
   const [deviceId, setDeviceId] = useState("")
   const [isCreatingOrder, setIsCreatingOrder] = useState(false)
 
@@ -63,14 +62,6 @@ export default function MenuPage() {
   }, [restaurantId, tableNumber])
 
   const checkExistingOrders = async (deviceId: string) => {
-    // Always show debug info first
-    setDebugInfo({
-      step: 'CHECKING_ORDERS',
-      deviceId: deviceId,
-      isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-      userAgent: navigator.userAgent.substring(0, 50)
-    })
-
     try {
       const response = await fetch(`/api/orders/device/${deviceId}?restaurantId=${restaurantId}&tableNumber=${tableNumber}`)
       if (response.ok) {
@@ -87,17 +78,6 @@ export default function MenuPage() {
 
         setExistingOrders(recentOrders)
 
-        // Debug info visible on screen for iPhone
-        const debugData = {
-          ordersFound: recentOrders.length,
-          isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-          userAgent: navigator.userAgent.substring(0, 50),
-          orders: recentOrders.map(o => ({ id: o.id, status: o.status }))
-        }
-
-        // Store debug info to show on screen
-        setDebugInfo(debugData)
-
         if (recentOrders.length > 0) {
           // Check if there's a recent active order (not delivered)
           const activeOrder = recentOrders.find((order: any) =>
@@ -105,13 +85,8 @@ export default function MenuPage() {
           )
 
           if (activeOrder) {
-            // Update debug info with redirect info
-            setDebugInfo({...debugData, redirecting: true, redirectTo: activeOrder.id})
-
-            // Redirect directly to track the active order
-            setTimeout(() => {
-              window.location.href = `/track/${activeOrder.id}`
-            }, debugData.isMobile ? 1000 : 100)
+            // Immediate redirect to track the active order
+            window.location.href = `/track/${activeOrder.id}`
             return
           } else {
             // Only show existing orders popup if all orders are delivered
@@ -313,23 +288,6 @@ export default function MenuPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Debug Info for Mobile Testing */}
-      {debugInfo && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded m-4 text-sm">
-          <strong>DEBUG INFO:</strong><br/>
-          Orders Found: {debugInfo.ordersFound}<br/>
-          Is Mobile: {debugInfo.isMobile ? 'YES' : 'NO'}<br/>
-          {debugInfo.orders && debugInfo.orders.length > 0 && (
-            <>
-              Orders: {debugInfo.orders.map((o: any) => `${o.id.slice(-4)} (${o.status})`).join(', ')}<br/>
-            </>
-          )}
-          {debugInfo.redirecting && (
-            <span className="font-bold text-red-800">🔄 REDIRECTING TO: {debugInfo.redirectTo}</span>
-          )}
-          <br/>User Agent: {debugInfo.userAgent}...
-        </div>
-      )}
 
       {/* Header */}
       <div className="bg-white shadow-sm">
