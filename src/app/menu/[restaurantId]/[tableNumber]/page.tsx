@@ -37,6 +37,7 @@ export default function MenuPage() {
   const [showCheckout, setShowCheckout] = useState(false)
   const [existingOrders, setExistingOrders] = useState<any[]>([])
   const [showExistingOrders, setShowExistingOrders] = useState(false)
+  const [debugInfo, setDebugInfo] = useState<any>(null)
   const [deviceId, setDeviceId] = useState("")
   const [isCreatingOrder, setIsCreatingOrder] = useState(false)
 
@@ -62,6 +63,14 @@ export default function MenuPage() {
   }, [restaurantId, tableNumber])
 
   const checkExistingOrders = async (deviceId: string) => {
+    // Always show debug info first
+    setDebugInfo({
+      step: 'CHECKING_ORDERS',
+      deviceId: deviceId,
+      isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+      userAgent: navigator.userAgent.substring(0, 50)
+    })
+
     try {
       const response = await fetch(`/api/orders/device/${deviceId}?restaurantId=${restaurantId}&tableNumber=${tableNumber}`)
       if (response.ok) {
@@ -77,8 +86,37 @@ export default function MenuPage() {
         })
 
         setExistingOrders(recentOrders)
+
+        // Debug info visible on screen for iPhone
+        const debugData = {
+          ordersFound: recentOrders.length,
+          isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+          userAgent: navigator.userAgent.substring(0, 50),
+          orders: recentOrders.map(o => ({ id: o.id, status: o.status }))
+        }
+
+        // Store debug info to show on screen
+        setDebugInfo(debugData)
+
         if (recentOrders.length > 0) {
-          setShowExistingOrders(true)
+          // Check if there's a recent active order (not delivered)
+          const activeOrder = recentOrders.find((order: any) =>
+            order.status !== 'DELIVERED' && order.status !== 'CANCELLED'
+          )
+
+          if (activeOrder) {
+            // Update debug info with redirect info
+            setDebugInfo({...debugData, redirecting: true, redirectTo: activeOrder.id})
+
+            // Redirect directly to track the active order
+            setTimeout(() => {
+              window.location.href = `/track/${activeOrder.id}`
+            }, debugData.isMobile ? 1000 : 100)
+            return
+          } else {
+            // Only show existing orders popup if all orders are delivered
+            setShowExistingOrders(true)
+          }
         }
       }
     } catch (error) {
@@ -200,7 +238,13 @@ export default function MenuPage() {
   }
 
   const handleCheckout = async () => {
-    if (orderItems.length === 0 || !customerName.trim() || isCreatingOrder) return
+    console.log('=== CHECKOUT DEBUG ===')
+    console.log('Starting checkout process...')
+
+    if (orderItems.length === 0 || !customerName.trim() || isCreatingOrder) {
+      console.log('Checkout blocked:', { orderItems: orderItems.length, customerName: customerName.trim(), isCreatingOrder })
+      return
+    }
 
     setIsCreatingOrder(true)
     try {
@@ -218,6 +262,8 @@ export default function MenuPage() {
         }))
       }
 
+      console.log('Creating order with data:', orderData)
+
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
@@ -226,11 +272,20 @@ export default function MenuPage() {
         body: JSON.stringify(orderData),
       })
 
+      console.log('Order API response status:', response.status)
+
       if (response.ok) {
         const createdOrder = await response.json()
+        console.log('Order created successfully:', createdOrder)
+        console.log('Redirecting to payment page:', `/payment/${createdOrder.id}`)
+
         // Redirect to real payment page
         window.location.href = `/payment/${createdOrder.id}`
         return
+      } else {
+        const errorData = await response.text()
+        console.error('Order creation failed:', response.status, errorData)
+        alert('Failed to create order. Please try again.')
       }
     } catch (error) {
       console.error('Error creating real order:', error)
@@ -258,6 +313,24 @@ export default function MenuPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Debug Info for Mobile Testing */}
+      {debugInfo && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded m-4 text-sm">
+          <strong>DEBUG INFO:</strong><br/>
+          Orders Found: {debugInfo.ordersFound}<br/>
+          Is Mobile: {debugInfo.isMobile ? 'YES' : 'NO'}<br/>
+          {debugInfo.orders && debugInfo.orders.length > 0 && (
+            <>
+              Orders: {debugInfo.orders.map((o: any) => `${o.id.slice(-4)} (${o.status})`).join(', ')}<br/>
+            </>
+          )}
+          {debugInfo.redirecting && (
+            <span className="font-bold text-red-800">🔄 REDIRECTING TO: {debugInfo.redirectTo}</span>
+          )}
+          <br/>User Agent: {debugInfo.userAgent}...
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

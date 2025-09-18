@@ -112,15 +112,6 @@ function PaymentSuccessContent() {
               📱 Track Order Status
             </button>
 
-            {orderData && (
-              <button
-                onClick={() => window.location.href = `/menu/${orderData.restaurant.id}/${orderData.table.number}`}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-md transition-colors"
-              >
-                🍽️ Back to Menu
-              </button>
-            )}
-
             <button
               onClick={() => window.print()}
               className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md transition-colors"

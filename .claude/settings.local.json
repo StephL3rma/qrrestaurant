@@ -13,7 +13,12 @@
       "Bash(psql:*)",
       "Bash(git push:*)",
       "Bash(npx vercel:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(ping:*)",
+      "Bash(telnet:*)",
+      "Bash(Test-NetConnection -ComputerName \"31.220.31.19\" -Port 5432)",
+      "Bash(powershell:*)",
+      "Bash(docker-compose:*)"
     ],
     "deny": [],
     "ask": []
