@@ -16,6 +16,7 @@ interface MenuItem {
 interface OrderItem {
   menuItem: MenuItem
   quantity: number
+  comments?: string
 }
 
 interface Restaurant {
@@ -39,6 +40,9 @@ export default function MenuPage() {
   const [showExistingOrders, setShowExistingOrders] = useState(false)
   const [deviceId, setDeviceId] = useState("")
   const [isCreatingOrder, setIsCreatingOrder] = useState(false)
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
+  const [itemQuantity, setItemQuantity] = useState(1)
+  const [itemComments, setItemComments] = useState("")
 
   useEffect(() => {
     // Generate or get existing device ID
@@ -394,14 +398,94 @@ export default function MenuPage() {
                     ${item.price.toFixed(2)}
                   </p>
                 </div>
-                <div className="ml-4 flex items-center space-x-2">
-                  <button
-                    onClick={() => addToOrder(item)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-                    disabled={!item.available}
-                  >
-                    {item.available ? "Add to Order" : "Unavailable"}
-                  </button>
+                <div className="ml-4">
+                  {selectedItemId === item.id ? (
+                    // Expanded view with quantity and comments
+                    <div className="bg-gray-50 p-4 rounded-lg min-w-[250px]">
+                      <div className="space-y-3">
+                        {/* Quantity selector */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                          <div className="flex items-center space-x-3">
+                            <button
+                              onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
+                              className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300"
+                            >
+                              -
+                            </button>
+                            <span className="w-8 text-center font-medium">{itemQuantity}</span>
+                            <button
+                              onClick={() => setItemQuantity(itemQuantity + 1)}
+                              className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Comments field */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Special Instructions</label>
+                          <textarea
+                            value={itemComments}
+                            onChange={(e) => setItemComments(e.target.value)}
+                            placeholder="No onions, extra cheese, etc."
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm placeholder-orange-600 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                            rows={2}
+                          />
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => {
+                              // Add to order with selected quantity and comments
+                              const existingItem = orderItems.find(orderItem => orderItem.menuItem.id === item.id)
+                              if (existingItem) {
+                                setOrderItems(orderItems.map(orderItem =>
+                                  orderItem.menuItem.id === item.id
+                                    ? { ...orderItem, quantity: orderItem.quantity + itemQuantity, comments: itemComments }
+                                    : orderItem
+                                ))
+                              } else {
+                                setOrderItems([...orderItems, { menuItem: item, quantity: itemQuantity, comments: itemComments }])
+                              }
+                              // Reset form
+                              setSelectedItemId(null)
+                              setItemQuantity(1)
+                              setItemComments("")
+                            }}
+                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                          >
+                            Add to Order
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedItemId(null)
+                              setItemQuantity(1)
+                              setItemComments("")
+                            }}
+                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    // Collapsed view - just the add button
+                    <button
+                      onClick={() => {
+                        setSelectedItemId(item.id)
+                        setItemQuantity(1)
+                        setItemComments("")
+                      }}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                      disabled={!item.available}
+                    >
+                      {item.available ? "Add to Order" : "Unavailable"}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -458,22 +542,21 @@ export default function MenuPage() {
                 {orderItems.map((item) => (
                   <div key={item.menuItem.id} className="flex justify-between items-center py-2 border-b">
                     <div className="flex-1">
-                      <p className="font-medium">{item.menuItem.name}</p>
+                      <p className="font-medium text-gray-900">{item.menuItem.name}</p>
+                      {item.comments && (
+                        <p className="text-xs text-orange-600 italic">"{item.comments}"</p>
+                      )}
                       <p className="text-sm text-orange-700">${item.menuItem.price.toFixed(2)} each</p>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-gray-900 font-medium">x{item.quantity}</span>
+                      <span className="text-gray-900 font-bold">${(item.menuItem.price * item.quantity).toFixed(2)}</span>
                       <button
-                        onClick={() => updateQuantity(item.menuItem.id, item.quantity - 1)}
-                        className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"
+                        onClick={() => removeFromOrder(item.menuItem.id)}
+                        className="text-red-600 hover:text-red-800 text-lg"
+                        title="Remove from order"
                       >
-                        -
-                      </button>
-                      <span className="w-8 text-center">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.menuItem.id, item.quantity + 1)}
-                        className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"
-                      >
-                        +
+                        ✕
                       </button>
                     </div>
                   </div>
@@ -482,7 +565,7 @@ export default function MenuPage() {
 
               {/* Total */}
               <div className="border-t pt-4 mb-4">
-                <div className="flex justify-between text-lg font-bold">
+                <div className="flex justify-between text-lg font-bold text-gray-900">
                   <span>Total:</span>
                   <span>${getTotalAmount().toFixed(2)}</span>
                 </div>

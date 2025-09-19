@@ -32,7 +32,13 @@ export async function GET(
     }
 
     const orders = await prisma.order.findMany({
-      where: whereClause,
+      where: {
+        ...whereClause,
+        // Only return active orders (not delivered or cancelled)
+        status: {
+          in: ['PENDING', 'CONFIRMED', 'PREPARING', 'READY']
+        }
+      },
       include: {
         restaurant: {
           select: {
