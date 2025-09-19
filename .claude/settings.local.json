@@ -18,7 +18,8 @@
       "Bash(telnet:*)",
       "Bash(Test-NetConnection -ComputerName \"31.220.31.19\" -Port 5432)",
       "Bash(powershell:*)",
-      "Bash(docker-compose:*)"
+      "Bash(docker-compose:*)",
+      "Bash(ssh:*)"
     ],
     "deny": [],
     "ask": []
