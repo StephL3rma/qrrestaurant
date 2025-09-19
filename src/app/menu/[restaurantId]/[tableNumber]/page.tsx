@@ -114,21 +114,13 @@ export default function MenuPage() {
         const data = await response.json()
         setRestaurant(data)
       } else {
-        // Fallback to mock data if API fails
-        setRestaurant({
-          id: restaurantId as string,
-          name: "Restaurante de Prueba",
-          address: "Calle Falsa 123"
-        })
+        // No fallback - keep null restaurant
+        setRestaurant(null)
       }
     } catch (error) {
       console.error('Error fetching restaurant data:', error)
-      // Fallback to mock data
-      setRestaurant({
-        id: restaurantId as string,
-        name: "Restaurante de Prueba",
-        address: "Calle Falsa 123"
-      })
+      // No fallback - keep null restaurant
+      setRestaurant(null)
     }
   }
 
@@ -145,38 +137,8 @@ export default function MenuPage() {
       console.error('Error fetching menu items:', error)
     }
 
-    // Fallback to mock menu items
-    const mockMenuItems = [
-      {
-        id: "1",
-        name: "Hamburguesa Clásica",
-        description: "Hamburguesa con carne, lechuga, tomate y queso",
-        price: 150,
-        category: "main",
-        available: true,
-        imageUrl: null
-      },
-      {
-        id: "2",
-        name: "Papas Fritas",
-        description: "Papas fritas crujientes",
-        price: 50,
-        category: "side",
-        available: true,
-        imageUrl: null
-      },
-      {
-        id: "3",
-        name: "Coca Cola",
-        description: "Refresco de cola 355ml",
-        price: 30,
-        category: "drink",
-        available: true,
-        imageUrl: null
-      }
-    ]
-
-    setMenuItems(mockMenuItems)
+    // No fallback - show error message instead of fake menu items
+    setMenuItems([])
     setIsLoading(false)
   }
 
