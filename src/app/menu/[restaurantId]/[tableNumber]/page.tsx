@@ -267,10 +267,10 @@ export default function MenuPage() {
               <h1 className="text-2xl font-bold text-gray-900">
                 {restaurant?.name || "Restaurant Menu"}
               </h1>
-              <p className="text-sm text-gray-600">Table {tableNumber}</p>
+              <p className="text-sm text-orange-700">Table {tableNumber}</p>
             </div>
             <div className="text-right">
-              <div className="text-sm text-gray-600">Items: {orderItems.length}</div>
+              <div className="text-sm text-orange-700">Items: {orderItems.length}</div>
               <div className="font-bold text-lg text-indigo-600">
                 ${getTotalAmount().toFixed(2)}
               </div>
@@ -313,10 +313,10 @@ export default function MenuPage() {
                           {order.status.toLowerCase()}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-orange-700">
                         {order.orderItems.length} items • ${order.total.toFixed(2)}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-orange-600 mt-1">
                         {new Date(order.createdAt).toLocaleTimeString()}
                       </p>
                     </div>
@@ -388,7 +388,7 @@ export default function MenuPage() {
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
                   {item.description && (
-                    <p className="text-gray-600 text-sm mt-1">{item.description}</p>
+                    <p className="text-orange-700 text-sm mt-1">{item.description}</p>
                   )}
                   <p className="text-indigo-600 font-bold text-lg mt-2">
                     ${item.price.toFixed(2)}
@@ -415,7 +415,7 @@ export default function MenuPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-sm text-gray-600">{orderItems.length} items</p>
+                <p className="text-sm text-orange-700">{orderItems.length} items</p>
                 <p className="text-lg font-bold text-gray-900">
                   Total: ${getTotalAmount().toFixed(2)}
                 </p>
@@ -447,7 +447,7 @@ export default function MenuPage() {
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 placeholder-orange-600 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   placeholder="Enter your name"
                   required
                 />
@@ -459,7 +459,7 @@ export default function MenuPage() {
                   <div key={item.menuItem.id} className="flex justify-between items-center py-2 border-b">
                     <div className="flex-1">
                       <p className="font-medium">{item.menuItem.name}</p>
-                      <p className="text-sm text-gray-600">${item.menuItem.price.toFixed(2)} each</p>
+                      <p className="text-sm text-orange-700">${item.menuItem.price.toFixed(2)} each</p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <button

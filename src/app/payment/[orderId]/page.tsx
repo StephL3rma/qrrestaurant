@@ -185,7 +185,7 @@ export default function PaymentPage() {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
           <div className="border-b border-gray-200 pb-4 mb-4">
             <p className="font-medium">{order.restaurant.name}</p>
-            <p className="text-sm text-gray-600">Customer: {order.customerName || "Anonymous"}</p>
+            <p className="text-sm text-orange-700">Customer: {order.customerName || "Anonymous"}</p>
           </div>
           
           <div className="space-y-3">
@@ -193,7 +193,7 @@ export default function PaymentPage() {
               <div key={index} className="flex justify-between">
                 <div>
                   <span className="font-medium">{item.menuItem.name}</span>
-                  <span className="text-gray-600 ml-2">x{item.quantity}</span>
+                  <span className="text-orange-700 ml-2">x{item.quantity}</span>
                 </div>
                 <span>${(item.price * item.quantity).toFixed(2)}</span>
               </div>
@@ -233,8 +233,8 @@ export default function PaymentPage() {
                 />
                 <div>
                   <h3 className="font-medium text-gray-900">💳 Card / Apple Pay / Google Pay</h3>
-                  <p className="text-sm text-gray-600">Pay instantly with your card or mobile wallet</p>
-                  <p className="text-xs text-gray-500 mt-1">Processing fee: 2.9% + $0.30</p>
+                  <p className="text-sm text-orange-700">Pay instantly with your card or mobile wallet</p>
+                  <p className="text-xs text-orange-600 mt-1">Processing fee: 2.9% + $0.30</p>
                 </div>
               </div>
             </div>
@@ -259,7 +259,7 @@ export default function PaymentPage() {
                 />
                 <div>
                   <h3 className="font-medium text-gray-900">💵 Pay at Counter (Cash)</h3>
-                  <p className="text-sm text-gray-600">Pay when you pick up your order</p>
+                  <p className="text-sm text-orange-700">Pay when you pick up your order</p>
                   <p className="text-xs text-green-600 mt-1 font-medium">No processing fees!</p>
                 </div>
               </div>
@@ -280,7 +280,7 @@ export default function PaymentPage() {
               {(!clientSecret || !stripePromise) && (
                 <div className="text-center py-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">
+                  <p className="text-orange-700">
                     {!stripePromise ? "Loading payment system..." : "Setting up payment..."}
                   </p>
                 </div>
