@@ -25,11 +25,11 @@ services:
       target: development
     container_name: qr-restaurant-dev-app
     restart: unless-stopped
-    depends_on:
-      - postgres
+    # depends_on:
+      # - postgres  # Using external database
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://qruser:DevPassword123@postgres:5432/qrrestaurant
+      - DATABASE_URL=postgresql://qr_admin:PASSWORD@31.220.31.19:5432/qrrestaurant
       - NEXTAUTH_URL=http://31.220.31.19:3003
       - NEXTAUTH_SECRET=development-secret-32-chars-long
       - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51Rw6JgCKa9K8LC0JHB81KmeZFVfnaL3qPVJj5HuJjAnipCqNqtPGKZE660UViSGz5uR9Rlsuz79UyzzYyvpsq7sZ00K4H9C38s
