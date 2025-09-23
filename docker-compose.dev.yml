@@ -24,6 +24,9 @@ services:
       - .:/app
       - /app/node_modules
       - /app/.next
+      - /app/.env        # Exclude .env files to use docker-compose environment variables
+      - /app/.env.development
+      - /app/.env.production
     ports:
       - "3010:3000"  # Back to safe port mapping
     networks:
