@@ -11,12 +11,13 @@ services:
       target: development
     container_name: qr-restaurant-dev-app
     restart: unless-stopped
-    network_mode: host  # Use host network to access external DB
+    extra_hosts:
+      - "database:31.220.31.19"  # Map database hostname to external IP
     # depends_on:
       # - postgres  # Using external database
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://qr_admin:#1999Stri@127.0.0.1:5432/qrrestaurant
+      - DATABASE_URL=postgresql://qr_admin:#1999Stri@database:5432/qrrestaurant
       - NEXTAUTH_URL=http://31.220.31.19:3003
       - NEXTAUTH_SECRET=development-secret-32-chars-long
       - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51Rw6JgCKa9K8LC0JHB81KmeZFVfnaL3qPVJj5HuJjAnipCqNqtPGKZE660UViSGz5uR9Rlsuz79UyzzYyvpsq7sZ00K4H9C38s
@@ -25,10 +26,10 @@ services:
       - .:/app
       - /app/node_modules
       - /app/.next
-    # ports: # Not needed with host network mode
-      # - "3010:3000"
-    # networks: # Not needed with host network mode
-      # - qr-dev-network
+    ports:
+      - "3010:3000"  # Back to safe port mapping
+    networks:
+      - qr-dev-network
     # Hot reload para desarrollo
     command: npm run dev
 
