@@ -1,34 +1,16 @@
 version: '3.8'
 
 services:
-  # Base de datos PostgreSQL para desarrollo
-  postgres:
-    image: postgres:15-alpine
-    container_name: qr-restaurant-dev-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: qrrestaurant
-      POSTGRES_USER: qruser
-      POSTGRES_PASSWORD: DevPassword123
-    volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
-    networks:
-      - qr-dev-network
-
-  # Aplicación Next.js
+  # Aplicación Next.js (usando base de datos externa)
   app:
     build:
       context: .
       target: development
     container_name: qr-restaurant-dev-app
     restart: unless-stopped
-    depends_on:
-      - postgres
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://qruser:DevPassword123@postgres:5432/qrrestaurant
+      - DATABASE_URL=postgresql://qr_admin:%231999Stri@31.220.31.19:5432/qrrestaurant
       - NEXTAUTH_URL=http://31.220.31.19:3003
       - NEXTAUTH_SECRET=development-secret-32-chars-long
       - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51Rw6JgCKa9K8LC0JHB81KmeZFVfnaL3qPVJj5HuJjAnipCqNqtPGKZE660UViSGz5uR9Rlsuz79UyzzYyvpsq7sZ00K4H9C38s
@@ -40,8 +22,6 @@ services:
       # Note: .env files excluded to prevent override of docker-compose environment variables
     ports:
       - "3010:3000"  # Back to safe port mapping
-    networks:
-      - qr-dev-network
     # Hot reload para desarrollo
     command: npm run dev
 
@@ -58,12 +38,3 @@ services:
     volumes:
       - ./nginx.dev.conf:/etc/nginx/nginx.conf
       - ./ssl:/etc/nginx/ssl
-    networks:
-      - qr-dev-network
-
-volumes:
-  postgres_dev_data:
-
-networks:
-  qr-dev-network:
-    driver: bridge
