@@ -1,22 +1,8 @@
 version: '3.8'
 
 services:
-  # Base de datos PostgreSQL para desarrollo
-  postgres:
-    image: postgres:15-alpine
-    container_name: qr-restaurant-dev-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: qrrestaurant
-      POSTGRES_USER: qruser
-      POSTGRES_PASSWORD: DevPassword123
-    volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5433:5432"
-    networks:
-      - qr-dev-network
+  # Note: Using external PostgreSQL database at 31.220.31.19:5432
+  # No need for internal postgres container
 
   # Aplicación Next.js en modo desarrollo
   app:
@@ -54,15 +40,15 @@ services:
       - app
     ports:
       - "3003:80"
-      # - "443:443"  # Disabled - port already in use
+      - "3443:443"  # Use alternative port for SSL
     volumes:
       - ./nginx.dev.conf:/etc/nginx/nginx.conf
       - ./ssl:/etc/nginx/ssl
     networks:
       - qr-dev-network
 
-volumes:
-  postgres_dev_data:
+# volumes:
+  # postgres_dev_data:  # Not needed - using external database
 
 networks:
   qr-dev-network:
