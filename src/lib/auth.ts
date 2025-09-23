@@ -25,11 +25,20 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const restaurant = await prisma.restaurant.findUnique({
-          where: {
-            email: credentials.email
-          }
-        })
+        console.log("🔍 Searching for restaurant with email:", credentials.email)
+
+        let restaurant
+        try {
+          restaurant = await prisma.restaurant.findUnique({
+            where: {
+              email: credentials.email
+            }
+          })
+          console.log("🔍 Prisma query completed successfully")
+        } catch (error) {
+          console.error("💥 Prisma query failed:", error)
+          return null
+        }
 
         if (!restaurant) {
           console.log("❌ Restaurant not found for email:", credentials.email)
