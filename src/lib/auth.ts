@@ -15,7 +15,13 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log("🔐 LOGIN ATTEMPT:", {
+          email: credentials?.email,
+          passwordLength: credentials?.password?.length
+        })
+
         if (!credentials?.email || !credentials?.password) {
+          console.log("❌ Missing credentials")
           return null
         }
 
@@ -26,15 +32,29 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!restaurant) {
+          console.log("❌ Restaurant not found for email:", credentials.email)
           return null
         }
+
+        console.log("✅ Restaurant found:", {
+          id: restaurant.id,
+          name: restaurant.name,
+          email: restaurant.email,
+          hashedPassword: restaurant.password.substring(0, 20) + "..."
+        })
 
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           restaurant.password
         )
 
+        console.log("🔑 Password comparison:", {
+          inputPassword: credentials.password,
+          isValid: isPasswordValid
+        })
+
         if (!isPasswordValid) {
+          console.log("❌ Invalid password")
           return null
         }
 
