@@ -19,6 +19,7 @@ export default function TablesPage() {
   const [tables, setTables] = useState<Table[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [editingTable, setEditingTable] = useState<Table | null>(null)
   const [newTable, setNewTable] = useState({ number: "", capacity: "" })
   const [selectedTable, setSelectedTable] = useState<Table | null>(null)
   const [qrCodeData, setQrCodeData] = useState<{ qrCode: string; url: string } | null>(null)
@@ -68,6 +69,67 @@ export default function TablesPage() {
     }
   }
 
+  const handleEditTable = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingTable) return
+
+    try {
+      const response = await fetch(`/api/tables/${editingTable.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          number: parseInt(newTable.number),
+          capacity: newTable.capacity ? parseInt(newTable.capacity) : null
+        }),
+      })
+
+      if (response.ok) {
+        const updatedTable = await response.json()
+        setTables(tables.map(table =>
+          table.id === editingTable.id ? updatedTable : table
+        ))
+        setNewTable({ number: "", capacity: "" })
+        setEditingTable(null)
+        setShowAddForm(false)
+      }
+    } catch (error) {
+      console.error("Failed to update table:", error)
+    }
+  }
+
+  const handleDeleteTable = async (tableId: string) => {
+    if (!confirm("Are you sure you want to delete this table? This action cannot be undone.")) return
+
+    try {
+      const response = await fetch(`/api/tables/${tableId}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        setTables(tables.filter(table => table.id !== tableId))
+      }
+    } catch (error) {
+      console.error("Failed to delete table:", error)
+    }
+  }
+
+  const startEdit = (table: Table) => {
+    setEditingTable(table)
+    setNewTable({
+      number: table.number.toString(),
+      capacity: table.capacity?.toString() || ""
+    })
+    setShowAddForm(true)
+  }
+
+  const cancelEdit = () => {
+    setEditingTable(null)
+    setNewTable({ number: "", capacity: "" })
+    setShowAddForm(false)
+  }
+
   const generateQRCode = async (table: Table) => {
     try {
       const response = await fetch(`/api/tables/${table.id}/qr`)
@@ -82,7 +144,7 @@ export default function TablesPage() {
   }
 
   if (status === "loading" || isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+    return <div className="min-h-screen flex items-center justify-center text-gray-900">Loading...</div>
   }
 
   return (
@@ -114,8 +176,10 @@ export default function TablesPage() {
         <div className="px-4 py-6 sm:px-0">
           {showAddForm && (
             <div className="mb-6 bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Table</h3>
-              <form onSubmit={handleAddTable} className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {editingTable ? "Edit Table" : "Add New Table"}
+              </h3>
+              <form onSubmit={editingTable ? handleEditTable : handleAddTable} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
@@ -146,12 +210,12 @@ export default function TablesPage() {
                     type="submit"
                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
                   >
-                    Add Table
+                    {editingTable ? "Update Table" : "Add Table"}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowAddForm(false)}
-                    className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium"
+                    onClick={cancelEdit}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-900 px-4 py-2 rounded-md text-sm font-medium"
                   >
                     Cancel
                   </button>
@@ -168,7 +232,7 @@ export default function TablesPage() {
               
               {tables.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-gray-500">No tables yet. Add your first table to get started!</p>
+                  <p className="text-gray-700">No tables yet. Add your first table to get started!</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -178,16 +242,32 @@ export default function TablesPage() {
                         <div>
                           <h4 className="font-medium text-gray-900">Table {table.number}</h4>
                           {table.capacity && (
-                            <p className="text-sm text-gray-500">Capacity: {table.capacity}</p>
+                            <p className="text-sm text-gray-700">Capacity: {table.capacity}</p>
                           )}
                         </div>
                       </div>
-                      <button
-                        onClick={() => generateQRCode(table)}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-sm font-medium"
-                      >
-                        Generate QR Code
-                      </button>
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => generateQRCode(table)}
+                          className="w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-sm font-medium"
+                        >
+                          Generate QR Code
+                        </button>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => startEdit(table)}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTable(table.id)}
+                            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -209,7 +289,7 @@ export default function TablesPage() {
                       className="mx-auto"
                     />
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-sm text-gray-700">
                     Customers scan this code to view the menu
                   </p>
                   <div className="mt-4 flex justify-center space-x-3">
@@ -225,7 +305,7 @@ export default function TablesPage() {
                         setQrCodeData(null)
                         setSelectedTable(null)
                       }}
-                      className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium"
+                      className="bg-gray-300 hover:bg-gray-400 text-gray-900 px-4 py-2 rounded-md text-sm font-medium"
                     >
                       Close
                     </button>

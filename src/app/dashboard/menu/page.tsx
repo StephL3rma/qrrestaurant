@@ -20,6 +20,7 @@ export default function MenuPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
   const [newItem, setNewItem] = useState({
     name: "",
     description: "",
@@ -72,10 +73,97 @@ export default function MenuPage() {
     }
   }
 
+  const handleEditItem = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingItem) return
+
+    try {
+      const response = await fetch(`/api/menu-items/${editingItem.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: newItem.name,
+          description: newItem.description,
+          price: parseFloat(newItem.price),
+          category: newItem.category
+        }),
+      })
+
+      if (response.ok) {
+        const updatedItem = await response.json()
+        setMenuItems(menuItems.map(item =>
+          item.id === editingItem.id ? updatedItem : item
+        ))
+        setNewItem({ name: "", description: "", price: "", category: "" })
+        setEditingItem(null)
+      }
+    } catch (error) {
+      console.error("Failed to update menu item:", error)
+    }
+  }
+
+  const handleDeleteItem = async (itemId: string) => {
+    if (!confirm("Are you sure you want to delete this menu item?")) return
+
+    try {
+      const response = await fetch(`/api/menu-items/${itemId}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        setMenuItems(menuItems.filter(item => item.id !== itemId))
+      }
+    } catch (error) {
+      console.error("Failed to delete menu item:", error)
+    }
+  }
+
+  const toggleAvailability = async (itemId: string, currentAvailability: boolean) => {
+    try {
+      const response = await fetch(`/api/menu-items/${itemId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          available: !currentAvailability
+        }),
+      })
+
+      if (response.ok) {
+        const updatedItem = await response.json()
+        setMenuItems(menuItems.map(item =>
+          item.id === itemId ? updatedItem : item
+        ))
+      }
+    } catch (error) {
+      console.error("Failed to toggle availability:", error)
+    }
+  }
+
+  const startEdit = (item: MenuItem) => {
+    setEditingItem(item)
+    setNewItem({
+      name: item.name,
+      description: item.description || "",
+      price: item.price.toString(),
+      category: item.category
+    })
+    setShowAddForm(true)
+  }
+
+  const cancelEdit = () => {
+    setEditingItem(null)
+    setNewItem({ name: "", description: "", price: "", category: "" })
+    setShowAddForm(false)
+  }
+
   const categories = [...new Set(menuItems.map(item => item.category))]
 
   if (status === "loading" || isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+    return <div className="min-h-screen flex items-center justify-center text-gray-900">Loading...</div>
   }
 
   return (
@@ -107,8 +195,10 @@ export default function MenuPage() {
         <div className="px-4 py-6 sm:px-0">
           {showAddForm && (
             <div className="mb-6 bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Menu Item</h3>
-              <form onSubmit={handleAddItem} className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {editingItem ? "Edit Menu Item" : "Add New Menu Item"}
+              </h3>
+              <form onSubmit={editingItem ? handleEditItem : handleAddItem} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
@@ -165,12 +255,12 @@ export default function MenuPage() {
                     type="submit"
                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
                   >
-                    Add Item
+                    {editingItem ? "Update Item" : "Add Item"}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowAddForm(false)}
-                    className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium"
+                    onClick={cancelEdit}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-900 px-4 py-2 rounded-md text-sm font-medium"
                   >
                     Cancel
                   </button>
@@ -187,7 +277,7 @@ export default function MenuPage() {
               
               {menuItems.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-gray-500">No menu items yet. Add your first item to get started!</p>
+                  <p className="text-gray-700">No menu items yet. Add your first item to get started!</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -205,20 +295,35 @@ export default function MenuPage() {
                               <div className="flex-1">
                                 <h5 className="font-medium text-gray-900">{item.name}</h5>
                                 {item.description && (
-                                  <p className="text-gray-600 text-sm mt-1">{item.description}</p>
+                                  <p className="text-gray-700 text-sm mt-1">{item.description}</p>
                                 )}
                                 <p className="text-indigo-600 font-bold text-lg mt-2">
                                   ${item.price.toFixed(2)}
                                 </p>
                               </div>
                               <div className="ml-4 flex items-center space-x-2">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  item.available 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-red-100 text-red-800'
-                                }`}>
+                                <button
+                                  onClick={() => toggleAvailability(item.id, item.available)}
+                                  className={`px-2 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${
+                                    item.available
+                                      ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                      : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                  }`}
+                                >
                                   {item.available ? 'Available' : 'Unavailable'}
-                                </span>
+                                </button>
+                                <button
+                                  onClick={() => startEdit(item)}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-medium"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium"
+                                >
+                                  Delete
+                                </button>
                               </div>
                             </div>
                           </div>

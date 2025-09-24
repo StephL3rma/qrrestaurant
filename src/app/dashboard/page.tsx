@@ -61,6 +61,12 @@ export default function Dashboard() {
               <span className="text-gray-900 font-medium">
                 {restaurant?.name || session.user?.name}
               </span>
+              <Link
+                href="/dashboard/settings"
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                Settings
+              </Link>
               <button
                 onClick={() => signOut()}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
@@ -199,7 +205,7 @@ export default function Dashboard() {
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
                   Quick Actions
                 </h3>
-                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
                   <Link href="/dashboard/menu" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
                     Add Menu Item
                   </Link>
@@ -211,6 +217,9 @@ export default function Dashboard() {
                   </Link>
                   <Link href="/dashboard/payments" className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
                     Setup Payments
+                  </Link>
+                  <Link href="/dashboard/settings" className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
+                    Settings
                   </Link>
                 </div>
               </div>

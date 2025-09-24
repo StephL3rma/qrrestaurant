@@ -41,3 +41,40 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { name, phone, address } = await request.json()
+
+    if (!name || name.trim().length === 0) {
+      return NextResponse.json({ error: "Restaurant name is required" }, { status: 400 })
+    }
+
+    const restaurant = await prisma.restaurant.update({
+      where: { id: session.user.id },
+      data: {
+        name: name.trim(),
+        phone: phone?.trim() || null,
+        address: address?.trim() || null
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        address: true
+      }
+    })
+
+    return NextResponse.json(restaurant)
+  } catch (error) {
+    console.error("Failed to update restaurant:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
