@@ -254,7 +254,7 @@ export default function MenuPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading menu...</p>
+          <p className="mt-4 text-gray-900">Loading menu...</p>
         </div>
       </div>
     )
@@ -373,7 +373,7 @@ export default function MenuPage() {
                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
                   selectedCategory === category
                     ? "bg-indigo-100 text-indigo-700"
-                    : "text-gray-500 hover:text-gray-700"
+                    : "text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200"
                 }`}
               >
                 {category === "all" ? "All Items" : category}
@@ -405,7 +405,7 @@ export default function MenuPage() {
                       <div className="space-y-3">
                         {/* Quantity selector */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                          <label className="block text-sm font-medium text-gray-900 mb-2">Quantity</label>
                           <div className="flex items-center space-x-3">
                             <button
                               onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
@@ -425,12 +425,12 @@ export default function MenuPage() {
 
                         {/* Comments field */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Special Instructions</label>
+                          <label className="block text-sm font-medium text-gray-900 mb-2">Special Instructions</label>
                           <textarea
                             value={itemComments}
                             onChange={(e) => setItemComments(e.target.value)}
                             placeholder="No onions, extra cheese, etc."
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm placeholder-orange-600 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm placeholder-gray-600 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                             rows={2}
                           />
                         </div>
@@ -465,7 +465,7 @@ export default function MenuPage() {
                               setItemQuantity(1)
                               setItemComments("")
                             }}
-                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-900 hover:bg-gray-50"
                           >
                             Cancel
                           </button>
@@ -531,7 +531,7 @@ export default function MenuPage() {
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 placeholder-orange-600 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 placeholder-gray-600 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   placeholder="Enter your name"
                   required
                 />
@@ -582,7 +582,7 @@ export default function MenuPage() {
                 </button>
                 <button
                   onClick={() => setShowCheckout(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md font-medium"
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-900 px-4 py-2 rounded-md font-medium"
                 >
                   Cancel
                 </button>

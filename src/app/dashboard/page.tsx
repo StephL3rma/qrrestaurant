@@ -40,7 +40,7 @@ export default function Dashboard() {
   }
 
   if (status === "loading") {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+    return <div className="min-h-screen flex items-center justify-center text-gray-900">Loading...</div>
   }
 
   if (!session) {
@@ -58,7 +58,7 @@ export default function Dashboard() {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-700">
+              <span className="text-gray-900 font-medium">
                 {restaurant?.name || session.user?.name}
               </span>
               <button
@@ -86,7 +86,7 @@ export default function Dashboard() {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
+                      <dt className="text-sm font-medium text-gray-700 truncate">
                         Menu Items
                       </dt>
                       <dd className="text-lg font-medium text-gray-900">
@@ -115,7 +115,7 @@ export default function Dashboard() {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
+                      <dt className="text-sm font-medium text-gray-700 truncate">
                         Tables
                       </dt>
                       <dd className="text-lg font-medium text-gray-900">
@@ -144,7 +144,7 @@ export default function Dashboard() {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
+                      <dt className="text-sm font-medium text-gray-700 truncate">
                         Today&apos;s Orders
                       </dt>
                       <dd className="text-lg font-medium text-gray-900">
@@ -173,7 +173,7 @@ export default function Dashboard() {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
+                      <dt className="text-sm font-medium text-gray-700 truncate">
                         Payments
                       </dt>
                       <dd className="text-lg font-medium text-gray-900">

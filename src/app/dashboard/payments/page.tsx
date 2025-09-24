@@ -73,7 +73,7 @@ export default function PaymentsPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-900">Loading...</p>
         </div>
       </div>
     )
@@ -86,7 +86,7 @@ export default function PaymentsPage() {
           <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
             Payment Settings
           </h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-700">
             Configure your payment account to receive money from orders
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function PaymentsPage() {
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Stripe Connect Account</h3>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-gray-700">
             Connect your bank account to receive payments directly
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function PaymentsPage() {
                 </svg>
               </div>
               <h3 className="mt-2 text-sm font-medium text-gray-900">No payment account</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-700">
                 Create a Stripe account to start receiving payments
               </p>
               <div className="mt-6">
@@ -127,7 +127,7 @@ export default function PaymentsPage() {
             <div className="space-y-6">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <dt className="text-sm font-medium text-gray-500">Account Status</dt>
+                  <dt className="text-sm font-medium text-gray-700">Account Status</dt>
                   <dd className="mt-1 flex items-center">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       stripeStatus.onboarded 
@@ -140,14 +140,14 @@ export default function PaymentsPage() {
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <dt className="text-sm font-medium text-gray-500">Account ID</dt>
+                  <dt className="text-sm font-medium text-gray-700">Account ID</dt>
                   <dd className="mt-1 text-sm text-gray-900 font-mono">
                     {stripeStatus.accountId}
                   </dd>
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <dt className="text-sm font-medium text-gray-500">Charges Enabled</dt>
+                  <dt className="text-sm font-medium text-gray-700">Charges Enabled</dt>
                   <dd className="mt-1">
                     <span className={`inline-flex items-center ${
                       stripeStatus.chargesEnabled ? "text-green-600" : "text-red-600"
@@ -158,7 +158,7 @@ export default function PaymentsPage() {
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <dt className="text-sm font-medium text-gray-500">Payouts Enabled</dt>
+                  <dt className="text-sm font-medium text-gray-700">Payouts Enabled</dt>
                   <dd className="mt-1">
                     <span className={`inline-flex items-center ${
                       stripeStatus.payoutsEnabled ? "text-green-600" : "text-red-600"

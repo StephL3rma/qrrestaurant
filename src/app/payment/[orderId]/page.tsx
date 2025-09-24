@@ -54,31 +54,36 @@ export default function PaymentPage() {
 
   const fetchOrderAndCreatePayment = async () => {
     try {
-      console.log('=== PAYMENT PAGE DEBUG ===')
-      console.log('Fetching order:', orderId)
-      console.log('Payment method:', paymentMethod)
+      // Create timeout for the entire operation
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Payment setup timed out. Please try again.')), 15000)
+      )
 
-      // Try to fetch real order from database first
-      const orderResponse = await fetch(`/api/orders/${orderId}`)
-      console.log('Order response status:', orderResponse.status)
+      // Fetch order with timeout
+      const fetchOrder = async () => {
+        const orderResponse = await fetch(`/api/orders/${orderId}`, {
+          cache: 'no-cache'
+        })
 
-      if (orderResponse.ok) {
-        const orderData = await orderResponse.json()
-        console.log('Order data loaded:', orderData)
-        setOrder(orderData)
+        if (!orderResponse.ok) {
+          throw new Error(`Order not found (${orderResponse.status})`)
+        }
 
-        // Only create payment intent for card payments
-        if (paymentMethod === "card") {
-          console.log('Creating payment intent...')
+        return orderResponse.json()
+      }
 
-          // Load Stripe lazily only when needed
-          if (!stripePromise) {
-            console.log('Loading Stripe...')
-            const stripe = getStripe()
-            setStripePromise(stripe)
-          }
+      const orderData = await Promise.race([fetchOrder(), timeout])
+      setOrder(orderData)
 
-          // Create real payment intent
+      // Only create payment intent for card payments
+      if (paymentMethod === "card") {
+        // Load Stripe and create payment intent in parallel
+        const stripePromiseLocal = stripePromise || getStripe()
+        if (!stripePromise) {
+          setStripePromise(stripePromiseLocal)
+        }
+
+        const createPaymentIntent = async () => {
           const paymentResponse = await fetch('/api/create-payment-intent', {
             method: 'POST',
             headers: {
@@ -87,30 +92,23 @@ export default function PaymentPage() {
             body: JSON.stringify({ orderId }),
           })
 
-          console.log('Payment intent response status:', paymentResponse.status)
-
-          if (paymentResponse.ok) {
-            const { clientSecret: realClientSecret } = await paymentResponse.json()
-            console.log('Payment intent created successfully')
-            setClientSecret(realClientSecret)
-          } else {
+          if (!paymentResponse.ok) {
             const errorText = await paymentResponse.text()
-            console.error('Payment intent failed:', errorText)
-            throw new Error('Failed to create payment intent: ' + errorText)
+            throw new Error(`Payment setup failed: ${errorText}`)
           }
-        } else {
-          console.log('Cash payment selected, skipping payment intent')
+
+          return paymentResponse.json()
         }
-      } else {
-        const errorText = await orderResponse.text()
-        console.error('Order fetch failed:', errorText)
-        // Clear any old mock data
-        localStorage.removeItem('mockOrder')
-        throw new Error("Order not found: " + errorText)
+
+        const { clientSecret: realClientSecret } = await Promise.race([
+          createPaymentIntent(),
+          timeout
+        ])
+        setClientSecret(realClientSecret)
       }
     } catch (error: unknown) {
-      console.error('Payment setup error:', error)
-      setError(error instanceof Error ? error.message : 'An error occurred')
+      const errorMessage = error instanceof Error ? error.message : 'Payment setup failed'
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -141,7 +139,7 @@ export default function PaymentPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Setting up payment...</p>
+          <p className="mt-4 text-gray-900">Setting up payment...</p>
         </div>
       </div>
     )
@@ -280,7 +278,7 @@ export default function PaymentPage() {
               {(!clientSecret || !stripePromise) && (
                 <div className="text-center py-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                  <p className="text-orange-700">
+                  <p className="text-gray-900 font-medium">
                     {!stripePromise ? "Loading payment system..." : "Setting up payment..."}
                   </p>
                 </div>
