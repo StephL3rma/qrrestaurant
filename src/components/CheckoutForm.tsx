@@ -74,7 +74,7 @@ export default function CheckoutForm({ orderId }: CheckoutFormProps) {
       <button
         disabled={isLoading || !stripe || !elements}
         id="submit"
-        className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white font-medium py-3 px-4 rounded-md transition-colors"
+        className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 disabled:bg-orange-300 text-white font-medium py-3 px-4 rounded-md transition-colors"
       >
         <span id="button-text">
           {isLoading ? (

@@ -254,7 +254,7 @@ export default function MenuPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-900">Loading menu...</p>
+          <p className="mt-4 text-indigo-900 font-medium">Loading menu...</p>
         </div>
       </div>
     )
@@ -268,7 +268,7 @@ export default function MenuPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-indigo-900">
                 {restaurant?.name || "Restaurant Menu"}
               </h1>
               <p className="text-sm text-orange-700">Table {tableNumber}</p>
@@ -303,7 +303,7 @@ export default function MenuPage() {
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-medium text-indigo-900">
                           Order #{order.id.slice(-8)}
                         </span>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -311,8 +311,8 @@ export default function MenuPage() {
                           order.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-800' :
                           order.status === 'PREPARING' ? 'bg-orange-100 text-orange-800' :
                           order.status === 'READY' ? 'bg-green-100 text-green-800' :
-                          order.status === 'DELIVERED' ? 'bg-gray-100 text-gray-800' :
-                          'bg-gray-100 text-gray-800'
+                          order.status === 'DELIVERED' ? 'bg-purple-100 text-purple-800' :
+                          'bg-indigo-100 text-indigo-800'
                         }`}>
                           {order.status.toLowerCase()}
                         </span>
@@ -373,7 +373,7 @@ export default function MenuPage() {
                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
                   selectedCategory === category
                     ? "bg-indigo-100 text-indigo-700"
-                    : "text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200"
+                    : "text-orange-700 hover:text-indigo-900 bg-orange-100 hover:bg-orange-200"
                 }`}
               >
                 {category === "all" ? "All Items" : category}
@@ -390,7 +390,7 @@ export default function MenuPage() {
             <div key={item.id} className="bg-white rounded-lg shadow-sm p-4">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
+                  <h3 className="text-lg font-semibold text-indigo-900">{item.name}</h3>
                   {item.description && (
                     <p className="text-orange-700 text-sm mt-1">{item.description}</p>
                   )}
@@ -405,18 +405,18 @@ export default function MenuPage() {
                       <div className="space-y-3">
                         {/* Quantity selector */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-900 mb-2">Quantity</label>
+                          <label className="block text-sm font-medium text-indigo-900 mb-2">Quantity</label>
                           <div className="flex items-center space-x-3">
                             <button
                               onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
-                              className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300"
+                              className="w-8 h-8 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 hover:bg-orange-300 font-bold"
                             >
                               -
                             </button>
-                            <span className="w-8 text-center font-medium">{itemQuantity}</span>
+                            <span className="w-8 text-center font-bold text-indigo-900">{itemQuantity}</span>
                             <button
                               onClick={() => setItemQuantity(itemQuantity + 1)}
-                              className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300"
+                              className="w-8 h-8 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 hover:bg-orange-300 font-bold"
                             >
                               +
                             </button>
@@ -425,12 +425,12 @@ export default function MenuPage() {
 
                         {/* Comments field */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-900 mb-2">Special Instructions</label>
+                          <label className="block text-sm font-medium text-indigo-900 mb-2">Special Instructions</label>
                           <textarea
                             value={itemComments}
                             onChange={(e) => setItemComments(e.target.value)}
                             placeholder="No onions, extra cheese, etc."
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm placeholder-gray-600 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                            className="w-full border border-orange-300 rounded-md px-3 py-2 text-sm placeholder-orange-600 text-indigo-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                             rows={2}
                           />
                         </div>
@@ -465,7 +465,7 @@ export default function MenuPage() {
                               setItemQuantity(1)
                               setItemComments("")
                             }}
-                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-900 hover:bg-gray-50"
+                            className="px-4 py-2 border border-orange-300 rounded-md text-sm font-medium text-indigo-900 hover:bg-orange-50"
                           >
                             Cancel
                           </button>
@@ -500,7 +500,7 @@ export default function MenuPage() {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-orange-700">{orderItems.length} items</p>
-                <p className="text-lg font-bold text-gray-900">
+                <p className="text-lg font-bold text-indigo-900">
                   Total: ${getTotalAmount().toFixed(2)}
                 </p>
               </div>
@@ -520,18 +520,18 @@ export default function MenuPage() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Review Your Order</h3>
+              <h3 className="text-lg font-medium text-indigo-900 mb-4">Review Your Order</h3>
               
               {/* Customer Name */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-indigo-900 mb-2">
                   Your Name (for order tracking)
                 </label>
                 <input
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 placeholder-gray-600 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full border border-orange-300 rounded-md px-3 py-2 placeholder-orange-600 text-indigo-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   placeholder="Enter your name"
                   required
                 />
@@ -542,15 +542,15 @@ export default function MenuPage() {
                 {orderItems.map((item) => (
                   <div key={item.menuItem.id} className="flex justify-between items-center py-2 border-b">
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900">{item.menuItem.name}</p>
+                      <p className="font-medium text-indigo-900">{item.menuItem.name}</p>
                       {item.comments && (
                         <p className="text-xs text-orange-600 italic">"{item.comments}"</p>
                       )}
                       <p className="text-sm text-orange-700">${item.menuItem.price.toFixed(2)} each</p>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <span className="text-gray-900 font-medium">x{item.quantity}</span>
-                      <span className="text-gray-900 font-bold">${(item.menuItem.price * item.quantity).toFixed(2)}</span>
+                      <span className="text-orange-700 font-bold">x{item.quantity}</span>
+                      <span className="text-indigo-900 font-bold">${(item.menuItem.price * item.quantity).toFixed(2)}</span>
                       <button
                         onClick={() => removeFromOrder(item.menuItem.id)}
                         className="text-red-600 hover:text-red-800 text-lg"
@@ -565,7 +565,7 @@ export default function MenuPage() {
 
               {/* Total */}
               <div className="border-t pt-4 mb-4">
-                <div className="flex justify-between text-lg font-bold text-gray-900">
+                <div className="flex justify-between text-lg font-bold text-indigo-900">
                   <span>Total:</span>
                   <span>${getTotalAmount().toFixed(2)}</span>
                 </div>
@@ -582,7 +582,7 @@ export default function MenuPage() {
                 </button>
                 <button
                   onClick={() => setShowCheckout(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-900 px-4 py-2 rounded-md font-medium"
+                  className="bg-orange-300 hover:bg-orange-400 text-indigo-900 px-4 py-2 rounded-md font-medium"
                 >
                   Cancel
                 </button>
