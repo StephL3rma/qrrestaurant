@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { tableId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -23,7 +23,7 @@ export async function PUT(
     // Verify the table belongs to the authenticated restaurant
     const existingTable = await prisma.table.findFirst({
       where: {
-        id: params.id,
+        id: params.tableId,
         restaurantId: session.user.id
       }
     })
@@ -37,7 +37,7 @@ export async function PUT(
       where: {
         restaurantId: session.user.id,
         number: parseInt(number),
-        id: { not: params.id }
+        id: { not: params.tableId }
       }
     })
 
@@ -46,7 +46,7 @@ export async function PUT(
     }
 
     const table = await prisma.table.update({
-      where: { id: params.id },
+      where: { id: params.tableId },
       data: {
         number: parseInt(number),
         capacity: capacity ? parseInt(capacity) : null
@@ -62,7 +62,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { tableId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -74,7 +74,7 @@ export async function DELETE(
     // Verify the table belongs to the authenticated restaurant
     const existingTable = await prisma.table.findFirst({
       where: {
-        id: params.id,
+        id: params.tableId,
         restaurantId: session.user.id
       }
     })
@@ -86,7 +86,7 @@ export async function DELETE(
     // Check if there are any active orders for this table
     const activeOrders = await prisma.order.findMany({
       where: {
-        tableId: params.id,
+        tableId: params.tableId,
         status: {
           in: ['PENDING', 'CONFIRMED', 'PREPARING', 'READY']
         }
@@ -100,7 +100,7 @@ export async function DELETE(
     }
 
     await prisma.table.delete({
-      where: { id: params.id }
+      where: { id: params.tableId }
     })
 
     return NextResponse.json({ success: true })
