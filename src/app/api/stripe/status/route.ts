@@ -26,32 +26,57 @@ export async function GET(request: NextRequest) {
 
     // Check account status with Stripe
     const stripe = getServerStripe()
-    const account = await stripe.accounts.retrieve(restaurant.stripeAccountId)
-    
-    // For test mode, simulate onboarded status after account creation
-    const isTestMode = restaurant.stripeAccountId.startsWith('acct_')
-    const isOnboarded = isTestMode ? true : (
-      account.details_submitted && 
-      account.charges_enabled && 
-      account.payouts_enabled
-    )
+    try {
+      const account = await stripe.accounts.retrieve(restaurant.stripeAccountId)
 
-    // Update database if status changed
-    if (isOnboarded !== restaurant.stripeOnboarded) {
-      await prisma.restaurant.update({
-        where: { id: session.user.id },
-        data: { stripeOnboarded: isOnboarded }
+      // For test mode, simulate onboarded status after account creation
+      const isTestMode = restaurant.stripeAccountId.startsWith('acct_')
+      const isOnboarded = isTestMode ? true : (
+        account.details_submitted &&
+        account.charges_enabled &&
+        account.payouts_enabled
+      )
+
+      // Update database if status changed
+      if (isOnboarded !== restaurant.stripeOnboarded) {
+        await prisma.restaurant.update({
+          where: { id: session.user.id },
+          data: { stripeOnboarded: isOnboarded }
+        })
+      }
+
+      return NextResponse.json({
+        hasAccount: true,
+        onboarded: isOnboarded,
+        accountId: restaurant.stripeAccountId,
+        chargesEnabled: isTestMode ? true : account.charges_enabled,
+        payoutsEnabled: isTestMode ? true : account.payouts_enabled,
+        detailsSubmitted: isTestMode ? true : account.details_submitted
       })
-    }
+    } catch (stripeError: any) {
+      // Handle invalid/revoked Stripe accounts
+      if (stripeError.code === 'account_invalid' || stripeError.statusCode === 403) {
+        console.log(`Stripe account ${restaurant.stripeAccountId} is invalid, cleaning up...`)
 
-    return NextResponse.json({
-      hasAccount: true,
-      onboarded: isOnboarded,
-      accountId: restaurant.stripeAccountId,
-      chargesEnabled: isTestMode ? true : account.charges_enabled,
-      payoutsEnabled: isTestMode ? true : account.payouts_enabled,
-      detailsSubmitted: isTestMode ? true : account.details_submitted
-    })
+        // Clean up invalid account from database
+        await prisma.restaurant.update({
+          where: { id: session.user.id },
+          data: {
+            stripeAccountId: null,
+            stripeOnboarded: false
+          }
+        })
+
+        return NextResponse.json({
+          hasAccount: false,
+          onboarded: false,
+          message: "Invalid Stripe account cleaned up. Please start onboarding again."
+        })
+      }
+
+      // Re-throw other Stripe errors
+      throw stripeError
+    }
   } catch (error) {
     console.error("Failed to check Stripe status:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
