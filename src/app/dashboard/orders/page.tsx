@@ -24,6 +24,7 @@ interface Order {
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-800",
+  PENDING_CASH_PAYMENT: "bg-amber-100 text-amber-800",
   CONFIRMED: "bg-blue-100 text-blue-800",
   PREPARING: "bg-orange-100 text-orange-800",
   READY: "bg-green-100 text-green-800",
@@ -118,6 +119,23 @@ export default function OrdersPage() {
     return statusFlow[currentStatus as keyof typeof statusFlow]
   }
 
+  const confirmCashPayment = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}/confirm-cash-payment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (response.ok) {
+        fetchOrders()
+      }
+    } catch (error) {
+      console.error("Failed to confirm cash payment:", error)
+    }
+  }
+
   const getStatusAction = (status: string) => {
     const actions = {
       PENDING: "Confirm Order",
@@ -210,25 +228,55 @@ export default function OrdersPage() {
                     </ul>
                   </div>
 
-                  {getNextStatus(order.status) && (
-                    <div className="mt-4 pt-4 border-t">
-                      <button
-                        onClick={() => updateOrderStatus(order.id, getNextStatus(order.status))}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-                      >
-                        {getStatusAction(order.status)}
-                      </button>
-                      
-                      {order.status !== "DELIVERED" && (
-                        <button
-                          onClick={() => updateOrderStatus(order.id, "CANCELLED")}
-                          className="ml-3 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-                        >
-                          Cancel Order
-                        </button>
-                      )}
-                    </div>
-                  )}
+                  <div className="mt-4 pt-4 border-t">
+                    {order.status === "PENDING_CASH_PAYMENT" ? (
+                      <div className="space-y-3">
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                          <div className="flex items-center">
+                            <span className="text-2xl mr-3">💰</span>
+                            <div>
+                              <h4 className="font-semibold text-amber-800">Cash Payment Pending</h4>
+                              <p className="text-sm text-amber-700">Customer chose to pay ${order.total.toFixed(2)} in cash. Confirm when payment is received.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex space-x-3">
+                          <button
+                            onClick={() => confirmCashPayment(order.id)}
+                            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md text-sm font-medium flex items-center"
+                          >
+                            ✓ Confirm Cash Payment Received
+                          </button>
+                          <button
+                            onClick={() => updateOrderStatus(order.id, "CANCELLED")}
+                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                          >
+                            Cancel Order
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        {getNextStatus(order.status) && (
+                          <button
+                            onClick={() => updateOrderStatus(order.id, getNextStatus(order.status))}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                          >
+                            {getStatusAction(order.status)}
+                          </button>
+                        )}
+
+                        {order.status !== "DELIVERED" && (
+                          <button
+                            onClick={() => updateOrderStatus(order.id, "CANCELLED")}
+                            className="ml-3 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                          >
+                            Cancel Order
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

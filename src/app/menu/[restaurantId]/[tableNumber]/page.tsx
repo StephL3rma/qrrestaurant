@@ -89,14 +89,17 @@ export default function MenuPage() {
           )
 
           if (activeOrder) {
-            // IMPORTANT: Auto-redirect PENDING orders to payment (force payment)
-            // Redirect CONFIRMED/PREPARING/READY orders to tracking
+            // IMPORTANT: Auto-redirect logic for different order statuses
             if (activeOrder.status === 'PENDING') {
               // Force payment completion - redirect directly to payment page
               window.location.href = `/payment/${activeOrder.id}`
               return
+            } else if (activeOrder.status === 'PENDING_CASH_PAYMENT') {
+              // Redirect to cash confirmation (where they can still go back to payment)
+              window.location.href = `/payment/${activeOrder.id}/cash-confirmation`
+              return
             } else {
-              // Redirect to track orders that are in progress
+              // Redirect to track orders that are CONFIRMED/PREPARING/READY
               window.location.href = `/track/${activeOrder.id}`
               return
             }

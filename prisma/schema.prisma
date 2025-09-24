@@ -80,6 +80,7 @@ model OrderItem {
 
 enum OrderStatus {
   PENDING
+  PENDING_CASH_PAYMENT
   CONFIRMED
   PREPARING
   READY

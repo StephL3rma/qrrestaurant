@@ -8,11 +8,11 @@ export async function POST(
   try {
     const { orderId } = await params
 
-    // Update order to indicate cash payment
+    // Update order to indicate pending cash payment
     const order = await prisma.order.update({
       where: { id: orderId },
       data: {
-        status: 'CONFIRMED', // Kitchen can start preparing
+        status: 'PENDING_CASH_PAYMENT', // Waiting for restaurant confirmation
         paymentId: 'cash_payment_' + Date.now() // Mark as cash payment
       },
       include: {

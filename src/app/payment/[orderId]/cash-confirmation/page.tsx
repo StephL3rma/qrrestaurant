@@ -140,28 +140,70 @@ export default function CashConfirmationPage() {
         {/* Instructions */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
           <h3 className="text-lg font-semibold text-blue-800 mb-3">What happens next?</h3>
-          <div className="space-y-2 text-blue-700">
-            <div className="flex items-start">
-              <span className="font-bold mr-2">1.</span>
-              <span>Your order is now being prepared in the kitchen</span>
+          {order.status === 'PENDING_CASH_PAYMENT' ? (
+            <div className="space-y-2 text-blue-700">
+              <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-3 mb-3">
+                <p className="font-bold text-yellow-800">⏳ Waiting for payment confirmation</p>
+                <p className="text-yellow-700 text-sm mt-1">
+                  Your order is reserved but NOT yet being prepared. Payment confirmation required.
+                </p>
+              </div>
+              <div className="flex items-start">
+                <span className="font-bold mr-2">1.</span>
+                <span>Go to the counter with this confirmation</span>
+              </div>
+              <div className="flex items-start">
+                <span className="font-bold mr-2">2.</span>
+                <span className="font-medium">Pay exactly ${order.total.toFixed(2)} in cash</span>
+              </div>
+              <div className="flex items-start">
+                <span className="font-bold mr-2">3.</span>
+                <span>Restaurant will confirm your payment</span>
+              </div>
+              <div className="flex items-start">
+                <span className="font-bold mr-2">4.</span>
+                <span>Then your order will start being prepared</span>
+              </div>
+              <div className="mt-3 p-2 bg-blue-100 rounded">
+                <p className="text-sm text-blue-800">
+                  💡 <strong>Changed your mind?</strong> Use the yellow button above to pay with card instead.
+                </p>
+              </div>
             </div>
-            <div className="flex items-start">
-              <span className="font-bold mr-2">2.</span>
-              <span>You'll be notified when your order is ready (if contact info provided)</span>
+          ) : (
+            <div className="space-y-2 text-blue-700">
+              <div className="flex items-start">
+                <span className="font-bold mr-2">1.</span>
+                <span>Your order is now being prepared in the kitchen</span>
+              </div>
+              <div className="flex items-start">
+                <span className="font-bold mr-2">2.</span>
+                <span>You'll be notified when your order is ready (if contact info provided)</span>
+              </div>
+              <div className="flex items-start">
+                <span className="font-bold mr-2">3.</span>
+                <span>Go to the counter to pick up your order</span>
+              </div>
+              <div className="flex items-start">
+                <span className="font-bold mr-2">4.</span>
+                <span className="font-medium">Payment already confirmed: ${order.total.toFixed(2)}</span>
+              </div>
             </div>
-            <div className="flex items-start">
-              <span className="font-bold mr-2">3.</span>
-              <span>Go to the counter to pick up your order</span>
-            </div>
-            <div className="flex items-start">
-              <span className="font-bold mr-2">4.</span>
-              <span className="font-medium">Pay exactly ${order.total.toFixed(2)} in cash</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Actions */}
         <div className="space-y-3">
+          {/* Show Back to Payment Methods button only for PENDING_CASH_PAYMENT */}
+          {order.status === 'PENDING_CASH_PAYMENT' && (
+            <button
+              onClick={() => router.push(`/payment/${orderId}`)}
+              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+            >
+              ← Back to Payment Methods
+            </button>
+          )}
+
           <button
             onClick={() => router.push(`/track/${orderId}`)}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
