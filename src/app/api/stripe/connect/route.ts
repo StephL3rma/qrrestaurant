@@ -35,6 +35,14 @@ export async function POST(request: NextRequest) {
         name: restaurant.name,
         product_description: 'Restaurant food delivery and pickup services'
       },
+      capabilities: {
+        transfers: {
+          requested: true
+        },
+        card_payments: {
+          requested: true
+        }
+      },
     })
 
     // Update restaurant with Stripe account ID
