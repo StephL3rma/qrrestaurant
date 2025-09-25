@@ -31,10 +31,11 @@ export async function POST(request: NextRequest) {
         tableId: table.id,
         deviceId: deviceId || null, // Store device ID for tracking
         orderItems: {
-          create: orderItems.map((item: {quantity: number, price: string, menuItemId: string}) => ({
+          create: orderItems.map((item: {quantity: number, price: string, menuItemId: string, comments?: string}) => ({
             quantity: item.quantity,
             price: parseFloat(item.price),
-            menuItemId: item.menuItemId
+            menuItemId: item.menuItemId,
+            comments: item.comments || null
           }))
         }
       },

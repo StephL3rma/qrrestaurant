@@ -210,7 +210,8 @@ export default function MenuPage() {
         orderItems: orderItems.map(item => ({
           menuItemId: item.menuItem.id,
           quantity: item.quantity,
-          price: item.menuItem.price.toString()
+          price: item.menuItem.price.toString(),
+          comments: item.comments || null
         }))
       }
 

@@ -16,6 +16,7 @@ interface Order {
   }
   orderItems: Array<{
     quantity: number
+    comments: string | null
     menuItem: {
       name: string
     }
@@ -221,8 +222,17 @@ export default function OrdersPage() {
                     <h4 className="font-medium text-gray-900 mb-2">Order Items:</h4>
                     <ul className="space-y-1">
                       {order.orderItems.map((item, index) => (
-                        <li key={index} className="text-sm text-gray-700">
-                          {item.quantity}x {item.menuItem.name}
+                        <li key={index} className="text-sm">
+                          <div className="flex items-start justify-between">
+                            <span className="text-gray-700">
+                              {item.quantity}x {item.menuItem.name}
+                            </span>
+                          </div>
+                          {item.comments && (
+                            <div className="mt-1 pl-4 text-xs text-orange-600 italic border-l-2 border-orange-200">
+                              💬 "{item.comments}"
+                            </div>
+                          )}
                         </li>
                       ))}
                     </ul>

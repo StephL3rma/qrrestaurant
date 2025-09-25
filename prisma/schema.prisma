@@ -72,6 +72,7 @@ model OrderItem {
   id         String   @id @default(cuid())
   quantity   Int
   price      Float
+  comments   String?
   orderId    String
   menuItemId String
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
