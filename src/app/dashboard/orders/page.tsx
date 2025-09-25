@@ -39,6 +39,8 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isConnected, setIsConnected] = useState(false)
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
+  const [paymentLogs, setPaymentLogs] = useState<Record<string, any>>({})
 
   useEffect(() => {
     if (status === "loading") return
@@ -145,6 +147,52 @@ export default function OrdersPage() {
       READY: "Mark Delivered"
     }
     return actions[status as keyof typeof actions]
+  }
+
+  const toggleOrderExpansion = async (orderId: string) => {
+    const newExpanded = new Set(expandedOrders)
+
+    if (expandedOrders.has(orderId)) {
+      newExpanded.delete(orderId)
+    } else {
+      newExpanded.add(orderId)
+      // Fetch payment logs for this order if not already cached
+      if (!paymentLogs[orderId]) {
+        try {
+          const response = await fetch(`/api/orders/${orderId}/payment-logs`)
+          if (response.ok) {
+            const logs = await response.json()
+            setPaymentLogs(prev => ({ ...prev, [orderId]: logs }))
+          }
+        } catch (error) {
+          console.error("Failed to fetch payment logs:", error)
+        }
+      }
+    }
+
+    setExpandedOrders(newExpanded)
+  }
+
+  const getActionIcon = (action: string) => {
+    const icons = {
+      'cash_selected': '💵',
+      'cash_confirmed': '✅',
+      'card_payment': '💳',
+      'back_to_payment': '🔄',
+      'status_change': '📝'
+    }
+    return icons[action as keyof typeof icons] || '📋'
+  }
+
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
   }
 
   if (status === "loading" || isLoading) {
@@ -256,6 +304,87 @@ export default function OrdersPage() {
                   </div>
 
                   <div className="mt-4 pt-4 border-t">
+                    {/* Payment History Toggle */}
+                    <div className="mb-4">
+                      <button
+                        onClick={() => toggleOrderExpansion(order.id)}
+                        className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium transition-colors"
+                      >
+                        <span>{expandedOrders.has(order.id) ? '📋' : '📊'}</span>
+                        <span>{expandedOrders.has(order.id) ? 'Hide Payment History' : 'Show Payment History'}</span>
+                        <span className={`transform transition-transform duration-200 ${expandedOrders.has(order.id) ? 'rotate-180' : ''}`}>
+                          ▼
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Payment History Section */}
+                    {expandedOrders.has(order.id) && paymentLogs[order.id] && (
+                      <div className="mb-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                          <span className="mr-2">🕒</span>
+                          Payment History & Audit Trail
+                        </h4>
+
+                        {paymentLogs[order.id].hasMultiplePaymentAttempts && (
+                          <div className="mb-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                            <div className="flex items-center">
+                              <span className="text-yellow-600 mr-2">⚠️</span>
+                              <span className="text-sm font-medium text-yellow-800">
+                                Multiple payment attempts detected!
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="space-y-3">
+                          <div className="text-xs text-gray-600 mb-2">
+                            Total Events: {paymentLogs[order.id].totalLogs} | Last Payment Method: {paymentLogs[order.id].lastPaymentMethod || 'None'}
+                          </div>
+
+                          {paymentLogs[order.id].actions.map((log: any, index: number) => (
+                            <div key={index} className="bg-white border border-gray-200 rounded-lg p-3">
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-start space-x-3">
+                                  <span className="text-lg">{getActionIcon(log.action)}</span>
+                                  <div>
+                                    <div className="flex items-center space-x-2">
+                                      <span className="font-medium text-gray-900 capitalize">
+                                        {log.action.replace('_', ' ')}
+                                      </span>
+                                      {log.details?.paymentMethod && (
+                                        <span className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs font-medium">
+                                          {log.details.paymentMethod}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                      {formatDateTime(log.timestamp)}
+                                    </p>
+                                    {log.details?.reason && (
+                                      <p className="text-xs text-red-600 mt-1 bg-red-50 p-2 rounded border border-red-200">
+                                        {log.details.reason}
+                                      </p>
+                                    )}
+                                    {log.details?.note && (
+                                      <p className="text-xs text-blue-600 mt-1">
+                                        Note: {log.details.note}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                {log.details?.amount && (
+                                  <span className="text-sm font-medium text-gray-700">
+                                    ${log.details.amount}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {order.status === "PENDING_CASH_PAYMENT" ? (
                       <div className="space-y-3">
                         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">

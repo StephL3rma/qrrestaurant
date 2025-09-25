@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerStripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
+import { createPaymentLog } from "@/lib/paymentLogs"
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,6 +53,23 @@ export async function POST(request: NextRequest) {
         }
       })
 
+      // Log the card payment creation (direct payment)
+      await createPaymentLog({
+        orderId,
+        action: 'card_payment',
+        amount: order.total,
+        paymentId: paymentIntent.id,
+        previousStatus: order.status,
+        newStatus: order.status, // No status change yet
+        metadata: {
+          paymentIntentCreated: new Date().toISOString(),
+          paymentType: 'direct',
+          platformFee: 0,
+          stripePaymentIntentId: paymentIntent.id,
+          note: 'Restaurant not onboarded to Stripe Connect'
+        }
+      })
+
       return NextResponse.json({
         clientSecret: paymentIntent.client_secret,
         paymentIntentId: paymentIntent.id
@@ -75,6 +93,22 @@ export async function POST(request: NextRequest) {
         customerName: order.customerName || "Anonymous",
         restaurantName: order.restaurant.name,
         paymentType: "connect" // Indicates this uses Stripe Connect
+      }
+    })
+
+    // Log the card payment creation
+    await createPaymentLog({
+      orderId,
+      action: 'card_payment',
+      amount: order.total,
+      paymentId: paymentIntent.id,
+      previousStatus: order.status,
+      newStatus: order.status, // No status change yet
+      metadata: {
+        paymentIntentCreated: new Date().toISOString(),
+        paymentType: order.restaurant.stripeAccountId ? 'connect' : 'direct',
+        platformFee: order.restaurant.stripeAccountId ? Math.round(order.total * 100 * 0.01) : 0,
+        stripePaymentIntentId: paymentIntent.id
       }
     })
 

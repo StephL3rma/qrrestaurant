@@ -66,6 +66,7 @@ model Order {
   restaurant    Restaurant  @relation(fields: [restaurantId], references: [id])
   table         Table       @relation(fields: [tableId], references: [id])
   orderItems    OrderItem[]
+  paymentLogs   PaymentLog[]
 }
 
 model OrderItem {
@@ -87,4 +88,17 @@ enum OrderStatus {
   READY
   DELIVERED
   CANCELLED
+}
+
+model PaymentLog {
+  id          String   @id @default(cuid())
+  orderId     String
+  action      String   // "cash_selected", "cash_confirmed", "card_payment", "back_to_payment"
+  amount      Float?
+  paymentId   String?
+  previousStatus String?
+  newStatus   String?
+  metadata    Json?    // Additional info like payment method, timestamps, etc
+  createdAt   DateTime @default(now())
+  order       Order    @relation(fields: [orderId], references: [id])
 }

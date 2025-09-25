@@ -199,6 +199,19 @@ export default function MenuPage() {
     }
 
     setIsCreatingOrder(true)
+
+    // Show progress feedback
+    const progressMessages = [
+      "Preparing your order...",
+      "Connecting to restaurant...",
+      "Processing payment options..."
+    ]
+
+    let messageIndex = 0
+    const progressInterval = setInterval(() => {
+      messageIndex = (messageIndex + 1) % progressMessages.length
+    }, 1000)
+
     try {
       // Try to create a real order first
       const orderData = {
@@ -232,8 +245,12 @@ export default function MenuPage() {
         console.log('Order created successfully:', createdOrder)
         console.log('Redirecting to payment page:', `/payment/${createdOrder.id}`)
 
-        // Redirect to real payment page
-        window.location.href = `/payment/${createdOrder.id}`
+        clearInterval(progressInterval)
+
+        // Show success message briefly before redirect
+        setTimeout(() => {
+          window.location.href = `/payment/${createdOrder.id}`
+        }, 1500)
         return
       } else {
         const errorData = await response.text()
@@ -246,6 +263,7 @@ export default function MenuPage() {
       setIsCreatingOrder(false)
       return
     } finally {
+      clearInterval(progressInterval)
       // Reset on any error or failure
       if (!window.location.href.includes('/payment/')) {
         setIsCreatingOrder(false)
@@ -580,9 +598,19 @@ export default function MenuPage() {
                 <button
                   onClick={handleCheckout}
                   disabled={!customerName.trim() || orderItems.length === 0 || isCreatingOrder}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white px-4 py-2 rounded-md font-medium"
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-orange-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md font-medium relative overflow-hidden"
                 >
-                  {isCreatingOrder ? "Creating Order..." : "Proceed to Payment"}
+                  {isCreatingOrder ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Processing Order...</span>
+                    </div>
+                  ) : (
+                    "Proceed to Payment"
+                  )}
+                  {isCreatingOrder && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                  )}
                 </button>
                 <button
                   onClick={() => setShowCheckout(false)}

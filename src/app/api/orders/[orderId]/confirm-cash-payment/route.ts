@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { createPaymentLog } from "@/lib/paymentLogs"
 
 export async function POST(
   request: NextRequest,
@@ -30,6 +31,21 @@ export async function POST(
         error: "Order not found or not pending cash payment"
       }, { status: 404 })
     }
+
+    // Log the cash payment confirmation
+    await createPaymentLog({
+      orderId,
+      action: 'cash_confirmed',
+      amount: existingOrder.total,
+      paymentId: existingOrder.paymentId || undefined,
+      previousStatus: 'PENDING_CASH_PAYMENT',
+      newStatus: 'CONFIRMED',
+      metadata: {
+        confirmedAt: new Date().toISOString(),
+        confirmedBy: 'restaurant_staff',
+        restaurantId: session.user.id
+      }
+    })
 
     // Confirm the cash payment - move to CONFIRMED status
     const order = await prisma.order.update({
