@@ -11,10 +11,21 @@ interface Restaurant {
   email: string
 }
 
+interface DashboardStats {
+  menuItemsCount: number
+  tablesCount: number
+  todaysOrdersCount: number
+}
+
 export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
+  const [stats, setStats] = useState<DashboardStats>({
+    menuItemsCount: 0,
+    tablesCount: 0,
+    todaysOrdersCount: 0
+  })
 
   useEffect(() => {
     if (status === "loading") return
@@ -23,8 +34,9 @@ export default function Dashboard() {
       return
     }
 
-    // Fetch restaurant data
+    // Fetch restaurant data and stats
     fetchRestaurant()
+    fetchStats()
   }, [session, status])
 
   const fetchRestaurant = async () => {
@@ -36,6 +48,18 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error("Failed to fetch restaurant:", error)
+    }
+  }
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch("/api/dashboard/stats")
+      if (response.ok) {
+        const data = await response.json()
+        setStats(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch dashboard stats:", error)
     }
   }
 
@@ -96,7 +120,7 @@ export default function Dashboard() {
                         Menu Items
                       </dt>
                       <dd className="text-lg font-medium text-gray-900">
-                        0
+                        {stats.menuItemsCount}
                       </dd>
                     </dl>
                   </div>
@@ -125,7 +149,7 @@ export default function Dashboard() {
                         Tables
                       </dt>
                       <dd className="text-lg font-medium text-gray-900">
-                        0
+                        {stats.tablesCount}
                       </dd>
                     </dl>
                   </div>
@@ -154,7 +178,7 @@ export default function Dashboard() {
                         Today&apos;s Orders
                       </dt>
                       <dd className="text-lg font-medium text-gray-900">
-                        0
+                        {stats.todaysOrdersCount}
                       </dd>
                     </dl>
                   </div>
