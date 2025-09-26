@@ -73,6 +73,15 @@ export default function PaymentPage() {
       }
 
       const orderData = await Promise.race([fetchOrder(), timeout])
+
+      // CHECK IF ORDER IS ALREADY CONFIRMED - REDIRECT TO TRACKING
+      if (orderData.status === 'CONFIRMED' || orderData.status === 'PREPARING' ||
+          orderData.status === 'READY' || orderData.status === 'DELIVERED') {
+        // Order is already confirmed, redirect to tracking page
+        router.push(`/track/${orderId}`)
+        return
+      }
+
       setOrder(orderData)
 
       // Only create payment intent for card payments

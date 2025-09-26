@@ -39,6 +39,15 @@ export default function CashConfirmationPage() {
       const response = await fetch(`/api/orders/${orderId}`)
       if (response.ok) {
         const orderData = await response.json()
+
+        // CHECK IF ORDER IS ALREADY CONFIRMED - REDIRECT TO TRACKING
+        if (orderData.status === 'CONFIRMED' || orderData.status === 'PREPARING' ||
+            orderData.status === 'READY' || orderData.status === 'DELIVERED') {
+          // Order is already confirmed, redirect to tracking page
+          router.push(`/track/${orderId}`)
+          return
+        }
+
         setOrder(orderData)
       }
     } catch (error) {
