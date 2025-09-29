@@ -43,10 +43,11 @@ export default function CheckoutForm({ orderId }: CheckoutFormProps) {
 
     if (error) {
       if (error.type === "card_error" || error.type === "validation_error") {
-        setMessage(error.message || "An error occurred")
+        setMessage(error.message || "Please check your card details and try again")
       } else {
-        setMessage("An unexpected error occurred.")
+        setMessage("An unexpected error occurred. Please try again.")
       }
+      console.error("Stripe payment error:", error)
     }
 
     setIsLoading(false)
@@ -54,6 +55,15 @@ export default function CheckoutForm({ orderId }: CheckoutFormProps) {
 
   const paymentElementOptions = {
     layout: "tabs" as const,
+    wallets: {
+      applePay: "auto",
+      googlePay: "auto"
+    },
+    // Disable Link auto-popup
+    link: {
+      persistent_token: null
+    },
+    paymentMethodOrder: ["apple_pay", "google_pay", "card"]
   }
 
   if (!mounted) {
