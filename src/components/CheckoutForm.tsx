@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import {
   useStripe,
   useElements,
@@ -15,7 +14,6 @@ interface CheckoutFormProps {
 export default function CheckoutForm({ orderId }: CheckoutFormProps) {
   const stripe = useStripe()
   const elements = useElements()
-  const router = useRouter()
 
   const [message, setMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -55,10 +53,10 @@ export default function CheckoutForm({ orderId }: CheckoutFormProps) {
 
   const paymentElementOptions = {
     layout: "tabs" as const,
-    // Disable wallets for now (require HTTPS + real domain)
+    // Enable Apple Pay and Google Pay now that we have HTTPS
     wallets: {
-      applePay: "never",
-      googlePay: "never"
+      applePay: "auto",
+      googlePay: "auto"
     },
     // Disable Link auto-popup
     link: {
