@@ -75,8 +75,12 @@ export default function PaymentPage() {
       const orderData = await Promise.race([fetchOrder(), timeout])
 
       // CHECK IF ORDER IS ALREADY CONFIRMED - REDIRECT TO TRACKING
-      if (orderData.status === 'CONFIRMED' || orderData.status === 'PREPARING' ||
-          orderData.status === 'READY' || orderData.status === 'DELIVERED') {
+      // But don't redirect if coming from Stripe success (to prevent redirect loop)
+      const urlParams = new URLSearchParams(window.location.search)
+      const fromStripeSuccess = urlParams.has('payment_intent') || document.referrer.includes('/payment/success')
+
+      if ((orderData.status === 'CONFIRMED' || orderData.status === 'PREPARING' ||
+          orderData.status === 'READY' || orderData.status === 'DELIVERED') && !fromStripeSuccess) {
         // Order is already confirmed, redirect to tracking page
         router.push(`/track/${orderId}`)
         return

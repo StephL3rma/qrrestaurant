@@ -26,6 +26,12 @@ function PaymentSuccessContent() {
 
       if (response.ok) {
         setOrderStatus("confirmed")
+      } else if (response.status === 409) {
+        // Order already confirmed (from our double payment prevention)
+        setOrderStatus("confirmed")
+        console.log("Order was already confirmed")
+      } else {
+        console.error("Failed to confirm order:", response.status)
       }
     } catch (error) {
       console.error("Failed to confirm order:", error)
