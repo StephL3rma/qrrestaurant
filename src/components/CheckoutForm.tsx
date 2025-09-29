@@ -55,15 +55,15 @@ export default function CheckoutForm({ orderId }: CheckoutFormProps) {
 
   const paymentElementOptions = {
     layout: "tabs" as const,
+    // Disable wallets for now (require HTTPS + real domain)
     wallets: {
-      applePay: "auto",
-      googlePay: "auto"
+      applePay: "never",
+      googlePay: "never"
     },
     // Disable Link auto-popup
     link: {
       persistent_token: null
-    },
-    paymentMethodOrder: ["apple_pay", "google_pay", "card"]
+    }
   }
 
   if (!mounted) {
