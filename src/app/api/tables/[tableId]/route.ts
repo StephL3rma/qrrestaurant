@@ -62,7 +62,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { tableId: string } }
+  { params }: { params: Promise<{ tableId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -71,10 +71,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const { tableId } = await params
+
     // Verify the table belongs to the authenticated restaurant
     const existingTable = await prisma.table.findFirst({
       where: {
-        id: params.tableId,
+        id: tableId,
         restaurantId: session.user.id
       }
     })
@@ -86,7 +88,7 @@ export async function DELETE(
     // Check if there are any active orders for this table
     const activeOrders = await prisma.order.findMany({
       where: {
-        tableId: params.tableId,
+        tableId: tableId,
         status: {
           in: ['PENDING', 'CONFIRMED', 'PREPARING', 'READY']
         }
@@ -100,7 +102,7 @@ export async function DELETE(
     }
 
     await prisma.table.delete({
-      where: { id: params.tableId }
+      where: { id: tableId }
     })
 
     return NextResponse.json({ success: true })

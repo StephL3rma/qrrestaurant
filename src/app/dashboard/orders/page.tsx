@@ -40,7 +40,7 @@ export default function OrdersPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isConnected, setIsConnected] = useState(false)
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
-  const [paymentLogs, setPaymentLogs] = useState<Record<string, any>>({})
+  const [paymentLogs, setPaymentLogs] = useState<Record<string, Record<string, unknown>>>({})
 
   useEffect(() => {
     if (status === "loading") return
@@ -290,7 +290,7 @@ export default function OrdersPage() {
                                         Instrucciones Especiales
                                       </p>
                                       <p className="text-sm font-medium text-yellow-900">
-                                        "{item.comments}"
+                                        &quot;{item.comments}&quot;
                                       </p>
                                     </div>
                                   </div>
@@ -342,7 +342,7 @@ export default function OrdersPage() {
                             Total Events: {paymentLogs[order.id].totalLogs} | Last Payment Method: {paymentLogs[order.id].lastPaymentMethod || 'None'}
                           </div>
 
-                          {paymentLogs[order.id].actions.map((log: any, index: number) => (
+                          {paymentLogs[order.id].actions.map((log: Record<string, unknown>, index: number) => (
                             <div key={index} className="bg-white border border-gray-200 rounded-lg p-3">
                               <div className="flex items-start justify-between">
                                 <div className="flex items-start space-x-3">

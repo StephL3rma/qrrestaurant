@@ -7,7 +7,7 @@ export interface PaymentLogData {
   paymentId?: string
   previousStatus?: string
   newStatus?: string
-  metadata?: any
+  metadata?: Record<string, unknown>
 }
 
 export async function createPaymentLog(data: PaymentLogData) {
