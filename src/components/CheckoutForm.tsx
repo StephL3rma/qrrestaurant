@@ -53,14 +53,9 @@ export default function CheckoutForm({ orderId }: CheckoutFormProps) {
 
   const paymentElementOptions = {
     layout: "tabs" as const,
-    // Enable Apple Pay and Google Pay now that we have HTTPS
     wallets: {
-      applePay: "auto",
-      googlePay: "auto"
-    },
-    // Disable Link auto-popup
-    link: {
-      persistent_token: null
+      applePay: "never",
+      googlePay: "never"
     }
   }
 

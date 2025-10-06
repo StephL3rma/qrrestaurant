@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       const paymentIntent = await stripe.paymentIntents.create({
         amount: totalAmount,
         currency: "usd",
-        payment_method_types: ["card", "apple_pay", "google_pay"],
+        payment_method_types: ["card"],
         metadata: {
           orderId: order.id,
           restaurantId: order.restaurantId,
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: "usd",
-      payment_method_types: ["card", "apple_pay", "google_pay"],
+      payment_method_types: ["card"],
       application_fee_amount: platformFeeAmount,
       transfer_data: {
         destination: order.restaurant.stripeAccountId,

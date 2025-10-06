@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { tableId: string } }
+  { params }: { params: Promise<{ tableId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -14,6 +14,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const { tableId } = await params
     const { number, capacity } = await request.json()
 
     if (!number) {
@@ -23,7 +24,7 @@ export async function PUT(
     // Verify the table belongs to the authenticated restaurant
     const existingTable = await prisma.table.findFirst({
       where: {
-        id: params.tableId,
+        id: tableId,
         restaurantId: session.user.id
       }
     })
@@ -37,7 +38,7 @@ export async function PUT(
       where: {
         restaurantId: session.user.id,
         number: parseInt(number),
-        id: { not: params.tableId }
+        id: { not: tableId }
       }
     })
 
@@ -46,7 +47,7 @@ export async function PUT(
     }
 
     const table = await prisma.table.update({
-      where: { id: params.tableId },
+      where: { id: tableId },
       data: {
         number: parseInt(number),
         capacity: capacity ? parseInt(capacity) : null
