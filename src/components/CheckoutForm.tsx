@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import {
   useStripe,
   useElements,
@@ -15,7 +14,6 @@ interface CheckoutFormProps {
 export default function CheckoutForm({ orderId }: CheckoutFormProps) {
   const stripe = useStripe()
   const elements = useElements()
-  const router = useRouter()
 
   const [message, setMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -55,14 +53,9 @@ export default function CheckoutForm({ orderId }: CheckoutFormProps) {
 
   const paymentElementOptions = {
     layout: "tabs" as const,
-    // Disable wallets for now (require HTTPS + real domain)
     wallets: {
       applePay: "never",
       googlePay: "never"
-    },
-    // Disable Link auto-popup
-    link: {
-      persistent_token: null
     }
   }
 
@@ -76,15 +69,16 @@ export default function CheckoutForm({ orderId }: CheckoutFormProps) {
 
   return (
     <form id="payment-form" onSubmit={handleSubmit}>
-      <PaymentElement 
-        id="payment-element" 
+      <PaymentElement
+        id="payment-element"
         options={paymentElementOptions}
       />
-      
+
       <button
         disabled={isLoading || !stripe || !elements}
         id="submit"
-        className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 disabled:bg-orange-300 text-white font-medium py-3 px-4 rounded-md transition-colors"
+        className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 disabled:bg-orange-300 text-white font-medium py-3 px-4 rounded-md
+transition-colors"
       >
         <span id="button-text">
           {isLoading ? (
@@ -97,7 +91,7 @@ export default function CheckoutForm({ orderId }: CheckoutFormProps) {
           )}
         </span>
       </button>
-      
+
       {message && (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-sm text-red-600">{message}</p>
@@ -105,4 +99,4 @@ export default function CheckoutForm({ orderId }: CheckoutFormProps) {
       )}
     </form>
   )
-}
+  }
