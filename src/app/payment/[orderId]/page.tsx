@@ -185,14 +185,7 @@ export default function PaymentPage() {
 
   const options = {
     clientSecret,
-    appearance,
-    // Enable Apple Pay and disable Link auto-popup
-    paymentMethodCreation: 'manual',
-    paymentMethodOptions: {
-      link: {
-        persistent_token: null,
-      },
-    },
+    appearance,asi?
   }
 
   return (
