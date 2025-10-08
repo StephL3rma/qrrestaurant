@@ -102,6 +102,42 @@ export async function DELETE(
       }, { status: 400 })
     }
 
+    // Guardar tableNumber en órdenes antes de desvincular
+    await prisma.order.updateMany({
+      where: {
+        tableId: tableId,
+        status: {
+          in: ['COMPLETED', 'CANCELLED', 'PAID']
+        }
+      },
+      data: {
+        tableId: null,
+        tableNumber: existingTable.number
+      }
+    })
+
+    // Contar cuántas órdenes tuvo esta mesa
+    const ordersCount = await prisma.order.count({
+      where: {
+        tableNumber: existingTable.number,
+        restaurantId: session.user.id
+      }
+    })
+
+    // Crear log de la mesa borrada
+    await prisma.tableLog.create({
+      data: {
+        tableId: tableId,
+        tableNumber: existingTable.number,
+        restaurantId: session.user.id,
+        action: 'deleted',
+        metadata: {
+          ordersCount,
+          deletedAt: new Date().toISOString()
+        }
+      }
+    })
+
     await prisma.table.delete({
       where: { id: tableId }
     })

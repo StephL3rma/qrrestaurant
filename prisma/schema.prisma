@@ -57,14 +57,15 @@ model Order {
   customerEmail String?
   status        OrderStatus @default(PENDING)
   total         Float
-  tableId       String
+  tableId       String?
+  tableNumber   Int?        // Keep table number for history
   restaurantId  String
   paymentId     String?
   deviceId      String?     // For tracking orders by device
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   restaurant    Restaurant  @relation(fields: [restaurantId], references: [id])
-  table         Table       @relation(fields: [tableId], references: [id])
+  table         Table?      @relation(fields: [tableId], references: [id])
   orderItems    OrderItem[]
   paymentLogs   PaymentLog[]
 }
@@ -101,4 +102,14 @@ model PaymentLog {
   metadata    Json?    // Additional info like payment method, timestamps, etc
   createdAt   DateTime @default(now())
   order       Order    @relation(fields: [orderId], references: [id])
+}
+
+model TableLog {
+  id           String   @id @default(cuid())
+  tableId      String   // ID of the deleted table
+  tableNumber  Int
+  restaurantId String
+  action       String   // "deleted", "created", "updated"
+  metadata     Json?    // Additional info like orders count, last order date, etc
+  createdAt    DateTime @default(now())
 }
