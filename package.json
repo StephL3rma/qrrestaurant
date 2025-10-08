@@ -19,12 +19,14 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/qrcode": "^1.5.5",
     "bcryptjs": "^3.0.2",
+    "date-fns": "^4.1.0",
     "next": "15.4.6",
     "next-auth": "^4.24.11",
     "prisma": "^6.14.0",
     "qrcode": "^1.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "recharts": "^3.2.1",
     "stripe": "^18.4.0"
   },
   "devDependencies": {
