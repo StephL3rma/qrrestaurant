@@ -127,11 +127,9 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="bg-gray-50 px-5 py-3">
-                <div className="text-sm">
-                  <Link href="/dashboard/menu" className="font-medium text-blue-700 hover:text-blue-900">
-                    Manage menu
-                  </Link>
-                </div>
+                <Link href="/dashboard/menu" className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
+                  Add Menu Item
+                </Link>
               </div>
             </div>
 
@@ -156,11 +154,9 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="bg-gray-50 px-5 py-3">
-                <div className="text-sm">
-                  <Link href="/dashboard/tables" className="font-medium text-green-700 hover:text-green-900">
-                    Manage tables
-                  </Link>
-                </div>
+                <Link href="/dashboard/tables" className="block w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
+                  Add Table
+                </Link>
               </div>
             </div>
 
@@ -185,11 +181,9 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="bg-gray-50 px-5 py-3">
-                <div className="text-sm">
-                  <Link href="/dashboard/orders" className="font-medium text-purple-700 hover:text-purple-900">
-                    View orders
-                  </Link>
-                </div>
+                <Link href="/dashboard/orders" className="block w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
+                  View Orders
+                </Link>
               </div>
             </div>
 
@@ -214,38 +208,9 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="bg-gray-50 px-5 py-3">
-                <div className="text-sm">
-                  <Link href="/dashboard/payments" className="font-medium text-yellow-700 hover:text-yellow-900">
-                    Configure payments
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Quick Actions
-                </h3>
-                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                  <Link href="/dashboard/menu" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
-                    Add Menu Item
-                  </Link>
-                  <Link href="/dashboard/tables" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
-                    Add Table
-                  </Link>
-                  <Link href="/dashboard/orders" className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
-                    View Orders
-                  </Link>
-                  <Link href="/dashboard/payments" className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
-                    Setup Payments
-                  </Link>
-                  <Link href="/dashboard/settings" className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
-                    Settings
-                  </Link>
-                </div>
+                <Link href="/dashboard/payments" className="block w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md text-sm font-medium text-center">
+                  Setup Payments
+                </Link>
               </div>
             </div>
           </div>
