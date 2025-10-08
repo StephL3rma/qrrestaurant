@@ -15,6 +15,13 @@ interface DashboardStats {
   menuItemsCount: number
   tablesCount: number
   todaysOrdersCount: number
+  todaysRevenue: number
+  averageTicket: number
+  bestSellingItem: {
+    name: string
+    quantity: number
+    revenue: number
+  }
 }
 
 export default function Dashboard() {
@@ -24,7 +31,10 @@ export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     menuItemsCount: 0,
     tablesCount: 0,
-    todaysOrdersCount: 0
+    todaysOrdersCount: 0,
+    todaysRevenue: 0,
+    averageTicket: 0,
+    bestSellingItem: { name: 'Loading...', quantity: 0, revenue: 0 }
   })
 
   useEffect(() => {
@@ -104,6 +114,37 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* Today's Stats */}
+          <div className="mb-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Today&apos;s Performance</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-lg shadow-lg text-white">
+                <div className="text-sm font-medium opacity-90">Total Revenue</div>
+                <div className="mt-2 text-3xl font-bold">${stats.todaysRevenue.toFixed(2)}</div>
+                <div className="mt-1 text-xs opacity-75">Today</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-lg shadow-lg text-white">
+                <div className="text-sm font-medium opacity-90">Total Orders</div>
+                <div className="mt-2 text-3xl font-bold">{stats.todaysOrdersCount}</div>
+                <div className="mt-1 text-xs opacity-75">Today</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-lg shadow-lg text-white">
+                <div className="text-sm font-medium opacity-90">Average Ticket</div>
+                <div className="mt-2 text-3xl font-bold">${stats.averageTicket.toFixed(2)}</div>
+                <div className="mt-1 text-xs opacity-75">Per order today</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-lg shadow-lg text-white">
+                <div className="text-sm font-medium opacity-90">Best Selling Item</div>
+                <div className="mt-2 text-xl font-bold truncate">{stats.bestSellingItem.name}</div>
+                <div className="mt-1 text-xs opacity-75">{stats.bestSellingItem.quantity} sold today</div>
+              </div>
+            </div>
+          </div>
+
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Manage Your Restaurant</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             <div className="bg-white overflow-hidden shadow rounded-lg">

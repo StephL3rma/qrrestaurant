@@ -238,47 +238,27 @@ export default function Analytics() {
           </ResponsiveContainer>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Top Selling Items */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Top Selling Items</h3>
-            <div className="space-y-3">
-              {analytics.topItems.slice(0, 5).map((item, index) => (
-                <div key={index} className="flex justify-between items-center">
+        {/* Top Selling Items */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Top Selling Items</h3>
+          <div className="space-y-3">
+            {analytics.topItems.slice(0, 10).map((item, index) => (
+              <div key={index} className="flex justify-between items-center border-b pb-3">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-bold text-blue-600">#{index + 1}</span>
+                  </div>
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">{item.name}</div>
                     <div className="text-sm text-gray-500">{item.quantity} sold</div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium text-gray-900">${item.revenue.toFixed(2)}</div>
-                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Orders by Status */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Orders by Status</h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={analytics.ordersByStatus}
-                  dataKey="count"
-                  nameKey="status"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label
-                >
-                  {analytics.ordersByStatus.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+                <div className="text-right">
+                  <div className="font-medium text-gray-900">${item.revenue.toFixed(2)}</div>
+                  <div className="text-sm text-gray-500">${(item.revenue / item.quantity).toFixed(2)} avg</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
