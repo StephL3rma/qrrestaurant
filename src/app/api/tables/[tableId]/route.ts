@@ -102,12 +102,12 @@ export async function DELETE(
       }, { status: 400 })
     }
 
-    // Guardar tableNumber en órdenes antes de desvincular
+    // Guardar tableNumber en órdenes antes de desvincular (órdenes terminadas)
     await prisma.order.updateMany({
       where: {
         tableId: tableId,
         status: {
-          in: ['COMPLETED', 'CANCELLED', 'PAID']
+          in: ['DELIVERED', 'CANCELLED']
         }
       },
       data: {
