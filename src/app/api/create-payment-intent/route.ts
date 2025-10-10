@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
             id: true,
             name: true,
             stripeAccountId: true,
-            stripeOnboarded: true
+            stripeOnboarded: true,
+            platformFeePercent: true
           }
         },
         orderItems: {
@@ -77,8 +78,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Calculate platform fee (1% of total) for Stripe Connect
-    const platformFeeAmount = Math.round(order.total * 100 * 0.01)
+    // Calculate platform fee using restaurant's custom percentage
+    const feePercent = order.restaurant.platformFeePercent || 1.0
+    const platformFeeAmount = Math.round(order.total * 100 * (feePercent / 100))
 
     // Create payment intent with destination charge (money goes to restaurant)
     const paymentIntent = await stripe.paymentIntents.create({
@@ -109,7 +111,8 @@ export async function POST(request: NextRequest) {
       metadata: {
         paymentIntentCreated: new Date().toISOString(),
         paymentType: order.restaurant.stripeAccountId ? 'connect' : 'direct',
-        platformFee: order.restaurant.stripeAccountId ? Math.round(order.total * 100 * 0.01) : 0,
+        platformFee: order.restaurant.stripeAccountId ? platformFeeAmount : 0,
+        platformFeePercent: order.restaurant.platformFeePercent || 1.0,
         stripePaymentIntentId: paymentIntent.id
       }
     })

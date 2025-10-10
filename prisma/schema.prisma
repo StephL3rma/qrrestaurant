@@ -18,6 +18,16 @@ model Restaurant {
   updatedAt       DateTime   @updatedAt
   stripeAccountId String?    @unique
   stripeOnboarded Boolean?   @default(false)
+
+  // Comisión de la plataforma (porcentaje)
+  platformFeePercent Float    @default(1.0)  // 1.0 = 1%
+
+  // Tier de pricing (opcional para planes futuros)
+  pricingTier     String?    @default("basic") // basic, premium, enterprise
+
+  // Notas internas (solo para super admin)
+  internalNotes   String?
+
   menuItems       MenuItem[]
   orders          Order[]
   tables          Table[]
