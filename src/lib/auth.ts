@@ -57,8 +57,7 @@ export const authOptions: NextAuthOptions = {
           restaurant.password
         )
 
-        console.log("🔑 Password comparison:", {
-          inputPassword: credentials.password,
+        console.log("🔑 Password comparison result:", {
           isValid: isPasswordValid
         })
 
@@ -77,6 +76,11 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
+    maxAge: 8 * 60 * 60, // 8 horas en segundos
+    updateAge: 2 * 60 * 60, // Actualiza el token cada 2 horas si está activo
+  },
+  jwt: {
+    maxAge: 8 * 60 * 60, // JWT expira en 8 horas
   },
   pages: {
     signIn: "/auth/signin",
