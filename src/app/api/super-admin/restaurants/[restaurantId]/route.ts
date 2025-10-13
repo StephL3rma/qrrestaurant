@@ -1,19 +1,35 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { verify } from "jsonwebtoken"
 
-// SUPER ADMIN EMAIL
-const SUPER_ADMIN_EMAIL = "stephllerma@icloud.com"
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || "super-admin-secret-key"
+
+function verifyToken(request: NextRequest) {
+  const authHeader = request.headers.get("authorization")
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null
+  }
+
+  const token = authHeader.substring(7)
+
+  try {
+    const decoded = verify(token, JWT_SECRET) as { id: string; email: string; role: string }
+    if (decoded.role !== "SUPER_ADMIN") {
+      return null
+    }
+    return decoded
+  } catch (error) {
+    return null
+  }
+}
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ restaurantId: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.email || session.user.email !== SUPER_ADMIN_EMAIL) {
+    const admin = verifyToken(request)
+    if (!admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 

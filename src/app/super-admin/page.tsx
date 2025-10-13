@@ -33,30 +33,35 @@ export default function SuperAdminDashboard() {
   const [editFee, setEditFee] = useState("")
   const [editTier, setEditTier] = useState("")
   const [editNotes, setEditNotes] = useState("")
-
-  // SUPER ADMIN EMAIL (solo tú puedes acceder)
-  const SUPER_ADMIN_EMAIL = "stephllerma@icloud.com" // Cambia esto a TU email
+  const [token, setToken] = useState<string | null>(null)
 
   useEffect(() => {
-    if (status === "loading") return
-    if (!session) {
-      router.push("/auth/signin")
+    // Verificar token de super admin
+    const savedToken = localStorage.getItem("superAdminToken")
+    if (!savedToken) {
+      router.push("/super-admin/login")
       return
     }
 
-    // Verificar que es super admin
-    if (session.user?.email !== SUPER_ADMIN_EMAIL) {
-      router.push("/dashboard")
-      return
-    }
+    setToken(savedToken)
+    fetchRestaurants(savedToken)
+  }, [])
 
-    fetchRestaurants()
-  }, [session, status])
-
-  const fetchRestaurants = async () => {
+  const fetchRestaurants = async (authToken: string) => {
     try {
       setLoading(true)
-      const response = await fetch("/api/super-admin/restaurants")
+      const response = await fetch("/api/super-admin/restaurants", {
+        headers: {
+          "Authorization": `Bearer ${authToken}`
+        }
+      })
+
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem("superAdminToken")
+        router.push("/super-admin/login")
+        return
+      }
+
       if (response.ok) {
         const data = await response.json()
         setRestaurants(data)
@@ -66,6 +71,11 @@ export default function SuperAdminDashboard() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("superAdminToken")
+    router.push("/super-admin/login")
   }
 
   const startEdit = (restaurant: Restaurant) => {
@@ -83,10 +93,15 @@ export default function SuperAdminDashboard() {
   }
 
   const saveChanges = async (restaurantId: string) => {
+    if (!token) return
+
     try {
       const response = await fetch(`/api/super-admin/restaurants/${restaurantId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
           platformFeePercent: parseFloat(editFee),
           pricingTier: editTier,
@@ -95,7 +110,7 @@ export default function SuperAdminDashboard() {
       })
 
       if (response.ok) {
-        fetchRestaurants()
+        fetchRestaurants(token)
         cancelEdit()
       }
     } catch (error) {
@@ -125,14 +140,8 @@ export default function SuperAdminDashboard() {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Link
-                href="/dashboard"
-                className="text-white hover:text-purple-200"
-              >
-                My Restaurant
-              </Link>
               <button
-                onClick={() => router.push("/auth/signin")}
+                onClick={handleLogout}
                 className="bg-white text-purple-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-50"
               >
                 Sign out
